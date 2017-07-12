@@ -9,6 +9,7 @@ use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Route;
+use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\Router;
 
@@ -244,5 +245,24 @@ class RouterTest extends TestCase
         $router->match('posts/all');
 
         $route = $router->get('another/url', function () {});
+    }
+
+    /** @test */
+    public function can_add_routes_in_a_group()
+    {
+        $router = new Router;
+        $count = 0;
+
+        $router->group('prefix', function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->get('all', function () {
+                return 'abc123';
+            });
+        });
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $router->match('prefix/all'));
     }
 }

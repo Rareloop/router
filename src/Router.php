@@ -5,11 +5,16 @@ namespace Rareloop\Router;
 use Rareloop\Router\AltoRouter\AltoRouter;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
+use Rareloop\Router\Routable;
 use Rareloop\Router\Route;
+use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
+use Rareloop\Router\VerbShortcutsTrait;
 
-class Router
+class Router implements Routable
 {
+    use VerbShortcutsTrait;
+
     private $routes = [];
     private $altoRouter;
     private $altoRoutesCreated = false;
@@ -43,36 +48,6 @@ class Router
         $this->addRoute($route);
 
         return $route;
-    }
-
-    public function get(string $uri, $callback) : Route
-    {
-        return $this->map(['GET'], $uri, $callback);
-    }
-
-    public function post(string $uri, $callback) : Route
-    {
-        return $this->map(['POST'], $uri, $callback);
-    }
-
-    public function patch(string $uri, $callback) : Route
-    {
-        return $this->map(['PATCH'], $uri, $callback);
-    }
-
-    public function put(string $uri, $callback) : Route
-    {
-        return $this->map(['PUT'], $uri, $callback);
-    }
-
-    public function delete(string $uri, $callback) : Route
-    {
-        return $this->map(['DELETE'], $uri, $callback);
-    }
-
-    public function options(string $uri, $callback) : Route
-    {
-        return $this->map(['OPTIONS'], $uri, $callback);
     }
 
     private function createAltoRoutes()
@@ -123,5 +98,14 @@ class Router
         } catch (\Exception $e) {
             throw new NamedRouteNotFoundException($name, null);
         }
+    }
+
+    public function group($prefix, $callback)
+    {
+        $group = new RouteGroup($prefix, $this);
+
+        call_user_func($callback, $group);
+
+        return $this;
     }
 }
