@@ -10,6 +10,7 @@ use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
+use Symfony\Component\HttpFoundation\Request;
 
 class Router implements Routable
 {
@@ -64,11 +65,11 @@ class Router implements Routable
         }
     }
 
-    public function match(string $uri = null, string $method = null)
+    public function match(Request $request)
     {
         $this->createAltoRoutes();
 
-        $altoRoute = $this->altoRouter->match($uri, $method);
+        $altoRoute = $this->altoRouter->match($request->getRequestUri(), $request->getMethod());
 
         if (is_callable($altoRoute['target'])) {
             if (isset($altoRoute['params'])) {

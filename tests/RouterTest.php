@@ -12,6 +12,7 @@ use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\Router;
+use Symfony\Component\HttpFoundation\Request;
 
 class RouterTest extends TestCase
 {
@@ -112,6 +113,7 @@ class RouterTest extends TestCase
     /** @test */
     public function match_works_with_a_closure()
     {
+        $request = Request::create('test/123', 'GET');
         $router = new Router;
         $count = 0;
 
@@ -120,7 +122,7 @@ class RouterTest extends TestCase
 
             return 'abc123';
         });
-        $response = $router->match('test/123', 'GET');
+        $response = $router->match($request);
 
         $this->assertSame(1, $count);
         $this->assertSame('abc123', $response);
@@ -129,10 +131,11 @@ class RouterTest extends TestCase
     /** @test */
     public function match_works_with_a_class_and_method_string()
     {
+        $request = Request::create('test/123', 'GET');
         $router = new Router;
 
         $route = $router->get('test/123', 'Rareloop\Router\Test\Controllers\TestController@returnHelloWorld');
-        $response = $router->match('test/123', 'GET');
+        $response = $router->match($request);
 
         $this->assertSame('Hello World', $response);
     }
@@ -170,6 +173,7 @@ class RouterTest extends TestCase
     /** @test */
     public function params_are_parsed_and_passed_into_callback_function()
     {
+        $request = Request::create('posts/123/comments/abc', 'GET');
         $router = new Router;
 
         $route = $router->get('posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
@@ -179,7 +183,7 @@ class RouterTest extends TestCase
             $this->assertSame('123', $params->postId);
             $this->assertSame('abc', $params->commentId);
         });
-        $router->match('posts/123/comments/abc', 'GET');
+        $router->match($request);
 
         $this->assertSame(1, $count);
     }
@@ -187,6 +191,7 @@ class RouterTest extends TestCase
     /** @test */
     public function params_are_parsed_and_passed_into_callback_function_when_surrounded_by_whitespace()
     {
+        $request = Request::create('posts/123/comments/abc', 'GET');
         $router = new Router;
 
         $route = $router->get('posts/{ postId }/comments/{ commentId }', function ($params) use (&$count) {
@@ -196,7 +201,7 @@ class RouterTest extends TestCase
             $this->assertSame('123', $params->postId);
             $this->assertSame('abc', $params->commentId);
         });
-        $router->match('posts/123/comments/abc', 'GET');
+        $router->match($request);
 
         $this->assertSame(1, $count);
     }
@@ -239,10 +244,11 @@ class RouterTest extends TestCase
     {
         $this->expectException(TooLateToAddNewRouteException::class);
 
+        $request = Request::create('posts/all', 'GET');
         $router = new Router;
 
         $route = $router->get('posts/all', function () {});
-        $router->match('posts/all');
+        $router->match($request);
 
         $route = $router->get('another/url', function () {});
     }
@@ -250,6 +256,7 @@ class RouterTest extends TestCase
     /** @test */
     public function can_add_routes_in_a_group()
     {
+        $request = Request::create('prefix/all', 'GET');
         $router = new Router;
         $count = 0;
 
@@ -263,6 +270,6 @@ class RouterTest extends TestCase
         });
 
         $this->assertSame(1, $count);
-        $this->assertSame('abc123', $router->match('prefix/all'));
+        $this->assertSame('abc123', $router->match($request));
     }
 }
