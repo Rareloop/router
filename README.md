@@ -1,4 +1,6 @@
 # Rare Router
+![CI](https://travis-ci.org/Rareloop/router.svg?branch=master)
+
 A simple PHP router built on [AltoRouter](https://github.com/dannyvankooten/AltoRouter) but inspired by the [Laravel](https://laravel.com/docs/5.4/routing) API.
 
 ## Installation
