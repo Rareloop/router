@@ -17,8 +17,13 @@ class Route
     public function __construct(array $methods, string $uri, $action)
     {
         $this->methods = $methods;
-        $this->uri = $uri;
+        $this->setUri($uri);
         $this->setAction($action);
+    }
+
+    private function setUri($uri)
+    {
+        $this->uri = rtrim($uri, ' /');
     }
 
     private function setAction($action)

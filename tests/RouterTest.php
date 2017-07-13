@@ -22,11 +22,11 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->map(['GET'], 'test/123', function () {});
+        $route = $router->map(['GET'], '/test/123', function () {});
 
         $this->assertInstanceOf(Route::class, $route);
         $this->assertSame(['GET'], $route->getMethods());
-        $this->assertSame('test/123', $route->getUri());
+        $this->assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -34,7 +34,7 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->map(['get', 'post', 'put', 'patch', 'delete', 'options'], 'test/123', function () {});
+        $route = $router->map(['get', 'post', 'put', 'patch', 'delete', 'options'], '/test/123', function () {});
 
         $this->assertSame(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $route->getMethods());
     }
@@ -44,11 +44,11 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->get('test/123', function () {});
+        $route = $router->get('/test/123', function () {});
 
         $this->assertInstanceOf(Route::class, $route);
         $this->assertSame(['GET'], $route->getMethods());
-        $this->assertSame('test/123', $route->getUri());
+        $this->assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -56,11 +56,11 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->post('test/123', function () {});
+        $route = $router->post('/test/123', function () {});
 
         $this->assertInstanceOf(Route::class, $route);
         $this->assertSame(['POST'], $route->getMethods());
-        $this->assertSame('test/123', $route->getUri());
+        $this->assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -68,11 +68,11 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->patch('test/123', function () {});
+        $route = $router->patch('/test/123', function () {});
 
         $this->assertInstanceOf(Route::class, $route);
         $this->assertSame(['PATCH'], $route->getMethods());
-        $this->assertSame('test/123', $route->getUri());
+        $this->assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -80,11 +80,11 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->put('test/123', function () {});
+        $route = $router->put('/test/123', function () {});
 
         $this->assertInstanceOf(Route::class, $route);
         $this->assertSame(['PUT'], $route->getMethods());
-        $this->assertSame('test/123', $route->getUri());
+        $this->assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -92,11 +92,11 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->delete('test/123', function () {});
+        $route = $router->delete('/test/123', function () {});
 
         $this->assertInstanceOf(Route::class, $route);
         $this->assertSame(['DELETE'], $route->getMethods());
-        $this->assertSame('test/123', $route->getUri());
+        $this->assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -104,21 +104,49 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->options('test/123', function () {});
+        $route = $router->options('/test/123', function () {});
 
         $this->assertInstanceOf(Route::class, $route);
         $this->assertSame(['OPTIONS'], $route->getMethods());
-        $this->assertSame('test/123', $route->getUri());
+        $this->assertSame('/test/123', $route->getUri());
+    }
+
+    /** @test */
+    public function map_removes_trailing_slash_from_uri()
+    {
+        $router = new Router;
+
+        $route = $router->map(['GET'], '/test/123/', function () {});
+
+        $this->assertInstanceOf(Route::class, $route);
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertSame('/test/123', $route->getUri());
+    }
+
+    /** @test */
+    public function leading_slash_is_optional_when_creating_a_route()
+    {
+        $request = Request::create('/test/123', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('test/123', function () use (&$count) {
+            $count++;
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertInstanceOf(Response::class, $response);
     }
 
     /** @test */
     public function match_returns_a_response_object()
     {
-        $request = Request::create('test/123', 'GET');
+        $request = Request::create('/test/123', 'GET');
         $router = new Router;
         $count = 0;
 
-        $route = $router->get('test/123', function () use (&$count) {
+        $route = $router->get('/test/123', function () use (&$count) {
             $count++;
 
             return 'abc123';
@@ -129,32 +157,41 @@ class RouterTest extends TestCase
         $this->assertInstanceOf(Response::class, $response);
     }
 
-    // /** @test */
-    // public function match_returns_a_404_response_object_when_route_is_not_found()
-    // {
-    //     $request = Request::create('test/123', 'GET');
-    //     $router = new Router;
-    //     $count = 0;
+    /** @test */
+    public function match_does_not_mutate_returned_response_object()
+    {
+        $request = Request::create('/test/123', 'GET');
+        $router = new Router;
+        $response = new Response('This is a test', Response::HTTP_ACCEPTED, ['content-type' => 'text/plain']);
 
-    //     $route = $router->get('test/123', function () use (&$count) {
-    //         $count++;
+        $route = $router->get('/test/123', function () use (&$response) {
+            return $response;
+        });
+        $routerResponse = $router->match($request);
 
-    //         return 'abc123';
-    //     });
-    //     $response = $router->match($request);
+        $this->assertSame($response, $routerResponse);
+    }
 
-    //     $this->assertSame(1, $count);
-    //     $this->assertInstanceOf(Response::class, $response);
-    // }
+    /** @test */
+    public function match_returns_a_404_response_object_when_route_is_not_found()
+    {
+        $request = Request::create('/test/123', 'GET');
+        $router = new Router;
+
+        $response = $router->match($request);
+
+        $this->assertInstanceOf(Response::class, $response);
+        $this->assertSame(404, $response->getStatusCode());
+    }
 
     /** @test */
     public function match_works_with_a_closure()
     {
-        $request = Request::create('test/123', 'GET');
+        $request = Request::create('/test/123', 'GET');
         $router = new Router;
         $count = 0;
 
-        $route = $router->get('test/123', function () use (&$count) {
+        $route = $router->get('/test/123', function () use (&$count) {
             $count++;
 
             return 'abc123';
@@ -168,10 +205,10 @@ class RouterTest extends TestCase
     /** @test */
     public function match_works_with_a_class_and_method_string()
     {
-        $request = Request::create('test/123', 'GET');
+        $request = Request::create('/test/123', 'GET');
         $router = new Router;
 
-        $route = $router->get('test/123', 'Rareloop\Router\Test\Controllers\TestController@returnHelloWorld');
+        $route = $router->get('/test/123', 'Rareloop\Router\Test\Controllers\TestController@returnHelloWorld');
         $response = $router->match($request);
 
         $this->assertSame('Hello World', $response->getContent());
@@ -184,7 +221,7 @@ class RouterTest extends TestCase
 
         $router = new Router;
 
-        $route = $router->get('test/123', 'Rareloop\Router\Test\Controllers\TestController:returnHelloWorld');
+        $route = $router->get('/test/123', 'Rareloop\Router\Test\Controllers\TestController:returnHelloWorld');
     }
 
     /** @test */
@@ -194,7 +231,7 @@ class RouterTest extends TestCase
 
         $router = new Router;
 
-        $route = $router->get('test/123', 'Rareloop\Router\Test\Controllers\UndefinedController@returnHelloWorld');
+        $route = $router->get('/test/123', 'Rareloop\Router\Test\Controllers\UndefinedController@returnHelloWorld');
     }
 
     /** @test */
@@ -204,16 +241,16 @@ class RouterTest extends TestCase
 
         $router = new Router;
 
-        $route = $router->get('test/123', 'Rareloop\Router\Test\Controllers\TestController@undefinedMethod');
+        $route = $router->get('/test/123', 'Rareloop\Router\Test\Controllers\TestController@undefinedMethod');
     }
 
     /** @test */
     public function params_are_parsed_and_passed_into_callback_function()
     {
-        $request = Request::create('posts/123/comments/abc', 'GET');
+        $request = Request::create('/posts/123/comments/abc', 'GET');
         $router = new Router;
 
-        $route = $router->get('posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
             $count++;
 
             $this->assertInstanceOf(RouteParams::class, $params);
@@ -228,10 +265,10 @@ class RouterTest extends TestCase
     /** @test */
     public function params_are_parsed_and_passed_into_callback_function_when_surrounded_by_whitespace()
     {
-        $request = Request::create('posts/123/comments/abc', 'GET');
+        $request = Request::create('/posts/123/comments/abc', 'GET');
         $router = new Router;
 
-        $route = $router->get('posts/{ postId }/comments/{ commentId }', function ($params) use (&$count) {
+        $route = $router->get('/posts/{ postId }/comments/{ commentId }', function ($params) use (&$count) {
             $count++;
 
             $this->assertInstanceOf(RouteParams::class, $params);
@@ -248,9 +285,9 @@ class RouterTest extends TestCase
     {
         $router = new Router;
 
-        $route = $router->get('posts/all', function () {})->name('test.name');
+        $route = $router->get('/posts/all', function () {})->name('test.name');
 
-        $this->assertSame('posts/all', $router->url('test.name'));
+        $this->assertSame('/posts/all', $router->url('test.name'));
     }
 
     /** @test */
@@ -293,7 +330,7 @@ class RouterTest extends TestCase
     /** @test */
     public function can_add_routes_in_a_group()
     {
-        $request = Request::create('prefix/all', 'GET');
+        $request = Request::create('/prefix/all', 'GET');
         $router = new Router;
         $count = 0;
 
@@ -304,6 +341,82 @@ class RouterTest extends TestCase
             $group->get('all', function () {
                 return 'abc123';
             });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function can_set_base_path()
+    {
+        $request = Request::create('/base-path/prefix/all', 'GET');
+        $router = new Router;
+        $router->setBasePath('/base-path/');
+        $count = 0;
+
+        $router->get('prefix/all', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function can_set_base_path_without_trailing_slash()
+    {
+        $request = Request::create('/base-path/prefix/all', 'GET');
+        $router = new Router;
+        $router->setBasePath('/base-path');
+        $count = 0;
+
+        $router->get('prefix/all', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function can_set_base_path_without_leading_slash()
+    {
+        $request = Request::create('/base-path/prefix/all', 'GET');
+        $router = new Router;
+        $router->setBasePath('base-path/');
+        $count = 0;
+
+        $router->get('prefix/all', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function can_set_base_path_without_leading_or_trailing_slash()
+    {
+        $request = Request::create('/base-path/prefix/all', 'GET');
+        $router = new Router;
+        $router->setBasePath('base-path');
+        $count = 0;
+
+        $router->get('prefix/all', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
         });
         $response = $router->match($request);
 

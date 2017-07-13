@@ -5,6 +5,7 @@ namespace Rareloop\Router;
 use Rareloop\Router\AltoRouter\AltoRouter;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
+use Rareloop\Router\Helpers\Formatting;
 use Rareloop\Router\Routable;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
@@ -20,10 +21,18 @@ class Router implements Routable
     private $routes = [];
     private $altoRouter;
     private $altoRoutesCreated = false;
+    private $basePath;
 
     public function __construct()
     {
         $this->altoRouter = new AltoRouter();
+        $this->setBasePath('/');
+    }
+
+    public function setBasePath($basePath)
+    {
+        $this->basePath = Formatting::addLeadingSlash(Formatting::addTrailingSlash($basePath));
+        $this->altoRouter->setBasePath($this->basePath);
     }
 
     private function addRoute(Route $route)
@@ -37,7 +46,7 @@ class Router implements Routable
 
     private function convertUriForAltoRouter(string $uri): string
     {
-        return preg_replace('/{\s*([a-zA-Z0-9]+)\s*}/s', '[:$1]', $uri);
+        return ltrim(preg_replace('/{\s*([a-zA-Z0-9]+)\s*}/s', '[:$1]', $uri), ' /');
     }
 
     public function map(array $verbs, string $uri, $callback): Route
@@ -72,24 +81,29 @@ class Router implements Routable
 
         $altoRoute = $this->altoRouter->match($request->getRequestUri(), $request->getMethod());
 
-        if (is_callable($altoRoute['target'])) {
-            if (isset($altoRoute['params'])) {
-                $params = new RouteParams($altoRoute['params']);
-                $returnValue = call_user_func($altoRoute['target'], $params);
-            } else {
-                $returnValue = call_user_func($altoRoute['target']);
-            }
-
-            if (!($returnValue instanceof Response)) {
-                $returnValue = new Response(
-                    $returnValue,
-                    Response::HTTP_OK,
-                    ['content-type' => 'text/html']
-                );
-            }
-
-            return $returnValue;
+        // Return a 404 if we don't find anything
+        if (!is_callable($altoRoute['target'])) {
+            return new Response('', Response::HTTP_NOT_FOUND);
         }
+
+        // Call the target with any resolved params
+        if (isset($altoRoute['params'])) {
+            $params = new RouteParams($altoRoute['params']);
+            $returnValue = call_user_func($altoRoute['target'], $params);
+        } else {
+            $returnValue = call_user_func($altoRoute['target']);
+        }
+
+        // Ensure that we return an instance of a Response object
+        if (!($returnValue instanceof Response)) {
+            $returnValue = new Response(
+                $returnValue,
+                Response::HTTP_OK,
+                ['content-type' => 'text/html']
+            );
+        }
+
+        return $returnValue;
     }
 
     public function has(string $name)
