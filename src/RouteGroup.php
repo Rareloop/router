@@ -14,7 +14,7 @@ class RouteGroup implements Routable
 
     public function __construct(string $prefix, $router)
     {
-        $this->prefix = $prefix;
+        $this->prefix = trim($prefix, ' /');
         $this->router = $router;
     }
 
@@ -23,8 +23,17 @@ class RouteGroup implements Routable
         return $this->prefix . '/' . $uri;
     }
 
-    public function map(array $verbs, string $uri, $callback): Route
+    public function map(array $verbs, string $uri, $callback) : Route
     {
         return $this->router->map($verbs, $this->appendPrefixToUri($uri), $callback);
+    }
+
+    public function group($prefix, $callback) : RouteGroup
+    {
+        $group = new RouteGroup($this->appendPrefixToUri($prefix), $this->router);
+
+        call_user_func($callback, $group);
+
+        return $this;
     }
 }

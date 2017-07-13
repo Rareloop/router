@@ -66,11 +66,21 @@ class Router implements Routable
         $this->altoRoutesCreated = true;
 
         foreach ($this->routes as $route) {
+            $uri = $this->convertUriForAltoRouter($route->getUri());
+
+            // Canonical URI with trailing slash - becomes named route if name is provided
             $this->altoRouter->map(
                 implode('|', $route->getMethods()),
-                $this->convertUriForAltoRouter($route->getUri()),
+                Formatting::addTrailingSlash($uri),
                 $route->getAction(),
                 $route->getName() ?? null
+            );
+
+            // Also register URI without trailing slash
+            $this->altoRouter->map(
+                implode('|', $route->getMethods()),
+                Formatting::removeTrailingSlash($uri),
+                $route->getAction()
             );
         }
     }
@@ -126,7 +136,7 @@ class Router implements Routable
         }
     }
 
-    public function group($prefix, $callback)
+    public function group($prefix, $callback) : Router
     {
         $group = new RouteGroup($prefix, $this);
 

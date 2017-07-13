@@ -203,6 +203,78 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function match_uri_with_trailing_when_route_has_been_defined_without_trailing_slash()
+    {
+        $request = Request::create('/test/123/', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function match_uri_with_trailing_when_route_has_been_defined_with_trailing_slash()
+    {
+        $request = Request::create('/test/123/', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123/', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function match_uri_without_trailing_when_route_has_been_defined_without_trailing_slash()
+    {
+        $request = Request::create('/test/123', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function match_uri_without_trailing_when_route_has_been_defined_with_trailing_slash()
+    {
+        $request = Request::create('/test/123', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123/', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
     public function match_works_with_a_class_and_method_string()
     {
         $request = Request::create('/test/123', 'GET');
@@ -281,13 +353,13 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function can_generate_url_for_named_route()
+    public function can_generate_canonical_uri_with_trailing_slash_for_named_route()
     {
         $router = new Router;
 
         $route = $router->get('/posts/all', function () {})->name('test.name');
 
-        $this->assertSame('/posts/all', $router->url('test.name'));
+        $this->assertSame('/posts/all/', $router->url('test.name'));
     }
 
     /** @test */
@@ -345,6 +417,78 @@ class RouterTest extends TestCase
         $response = $router->match($request);
 
         $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function group_prefixes_work_with_leading_slash()
+    {
+        $request = Request::create('/prefix/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group('/prefix', function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->get('all', function () {
+                return 'abc123';
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function group_prefixes_work_with_trailing_slash()
+    {
+        $request = Request::create('/prefix/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group('prefix/', function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->get('all', function () {
+                return 'abc123';
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function can_add_routes_in_nested_groups()
+    {
+        $request = Request::create('/prefix/prefix2/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group('prefix', function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->group('prefix2', function ($group) use (&$count) {
+                $count++;
+                $this->assertInstanceOf(RouteGroup::class, $group);
+
+                $group->get('all', function () {
+                    return 'abc123';
+                });
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(2, $count);
+        $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('abc123', $response->getContent());
     }
 
