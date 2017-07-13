@@ -363,6 +363,16 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function can_generate_canonical_uri_with_trailing_slash_for_named_route_with_params()
+    {
+        $router = new Router;
+
+        $route = $router->get('/posts/{id}/comments', function () {})->name('test.name');
+
+        $this->assertSame('/posts/123/comments/', $router->url('test.name', ['id' => 123]));
+    }
+
+    /** @test */
     public function generating_a_url_for_a_named_route_that_doesnt_exist_throws_an_exception()
     {
         $this->expectException(NamedRouteNotFoundException::class);
