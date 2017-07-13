@@ -1,72 +1,131 @@
-# Very short description of the package
-
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/:package_name.svg?style=flat-square)](https://packagist.org/packages/spatie/:package_name)
-[![Build Status](https://img.shields.io/travis/spatie/:package_name/master.svg?style=flat-square)](https://travis-ci.org/spatie/:package_name)
-[![SensioLabsInsight](https://img.shields.io/sensiolabs/i/xxxxxxxxx.svg?style=flat-square)](https://insight.sensiolabs.com/projects/xxxxxxxxx)
-[![Quality Score](https://img.shields.io/scrutinizer/g/spatie/:package_name.svg?style=flat-square)](https://scrutinizer-ci.com/g/spatie/:package_name)
-[![Total Downloads](https://img.shields.io/packagist/dt/spatie/:package_name.svg?style=flat-square)](https://packagist.org/packages/spatie/:package_name)
-
-**Note:** Replace ```:author_name``` ```:author_username``` ```:author_email``` ```:package_name``` ```:package_description``` with their correct values in [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE.md](LICENSE.md) and [composer.json](composer.json) files, then delete this line.
-
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what PSRs you support to avoid any confusion with users and contributors.
-
-## Postcardware
-
-You're free to use this package (it's [MIT-licensed](LICENSE.md)), but if it makes it to your production environment we highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using.
-
-Our address is: Spatie, Samberstraat 69D, 2060 Antwerp, Belgium.
-
-We publish all received postcards [on our company website](https://spatie.be/en/opensource/postcards).
+# Rare Router
+A simple PHP router built on [AltoRouter](https://github.com/dannyvankooten/AltoRouter) but inspired by the [Laravel](https://laravel.com/docs/5.4/routing) API.
 
 ## Installation
 
-**Note:** Remove this paragraph if you are building a public package  
-This package is custom built for [Spatie](https://spatie.be) projects and is therefore not registered on packagist. In order to install it via composer you must specify this extra repository in `composer.json`:
-
-```json
-"repositories": [ { "type": "composer", "url": "https://satis.spatie.be/" } ]
 ```
-
-You can install the package via composer:
-
-```bash
-composer require spatie/:package_name
+composer require rareloop/router
 ```
 
 ## Usage
 
-``` php
-$skeleton = new Spatie\Skeleton();
-echo $skeleton->echoPhrase('Hello, Spatie!');
+### Creating Routes
+
+#### Map
+
+Creating a route is done using the `map` function:
+
+```php
+use Rareloop\Router\Route;
+
+$router = new Router;
+
+// Creates a route that matches the uri `/posts/list` both GET 
+// and POST requests. 
+$router->map(['GET', 'POST'], 'posts/list', function () {
+    return 'Hello World';
+});
 ```
 
-## Changelog
+`map()` takes 3 parameters:
 
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
+- `methods` (array): list of matching request methods, valid values:
+    + 'GET'
+    + 'POST'
+    + 'PUT'
+    + 'PATCH'
+    + 'DELETE'
+    + 'OPTIONS'
+- `uri` (string): The URI to match against
+- `action`  (function|string): Either a closure or a Controller string
 
-## Testing
+#### Route Parameters
+Parameters can be defined on routes using the `{keyName}` syntax. When a route matches that contains parameters, an instance of the `RouteParams` object is passed to the action.
 
-``` bash
-composer test
+```php
+$router->map(['GET'], 'posts/{id}', function(RouteParams $params) {
+    return $params->id;
+});
 ```
 
-## Contributing
+#### Named Routes
+Routes can be named so that their URL can be generated programatically:
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+```php
+$router->map(['GET'], 'posts/all', function () {})->name('posts.index');
 
-## Security
+$url = $router->url('posts.index');
+```
 
-If you discover any security related issues, please email freek@spatie.be instead of using the issue tracker.
+If the route requires parameters you can be pass an associative array as a second parameter:
 
-## Credits
+```php
+$router->map(['GET'], 'posts/{id}', function () {})->name('posts.show');
 
-- [:author_name](https://github.com/:author_username)
-- [All Contributors](../../contributors)
+$url = $router->url('posts.show', ['id' => 123]);
+```
 
-## About Spatie
+#### HTTP Verb Shortcuts
+Typically you only need to allow one HTTP verb for a route, for these cases the following shortcuts can be used:
 
-Spatie is a webdesign agency based in Antwerp, Belgium. You'll find an overview of all our open source projects [on our website](https://spatie.be/opensource).
+```php
+$router->get('test/route', function () {});
+$router->post('test/route', function () {});
+$router->put('test/route', function () {});
+$router->patch('test/route', function () {});
+$router->delete('test/route', function () {});
+$router->options('test/route', function () {});
+```
 
-## License
+#### Setting the basepath
+The router assumes you're working from the route of a domain. If this is not the case you can set the base path:
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+```php
+$router->setBasePath('base/path');
+$router->map(['GET'], 'route/uri', function () {}); // `/base/path/route/uri`
+```
+
+#### Controllers
+If you'd rather use a class to group related route actions together you can pass a Controller String to `map()` instead of a closure. The string takes the format `{name of class}@{name of method}`. It is important that you use the complete namespace with the class name.
+
+Example:
+
+```php
+// TestController.php
+namespace \MyNamespace;
+
+class TestController
+{
+    public function testMethod()
+    {
+        return 'Hello World';
+    }
+}
+
+// routes.php
+$router->map(['GET'], 'route/uri', '\MyNamespace\TestController@testMethod');
+```
+
+### Creating Groups
+It is common to group similar routes behind a common prefix. This can be achieved using Route Groups:
+
+```php
+$router->group('prefix', function ($group) {
+    $group->map(['GET'], 'route1', function () {}); // `/prefix/route1`
+    $group->map(['GET'], 'route2', function () {}); // `/prefix/route2§`
+});
+```
+
+### Matching Routes to Requests
+Once you have routes defined, you can attempt to match your current request against them using the `match()` function. `match()` accepts an instance of Symfony's `Request` and returns an instance of Symfony's `Response`:
+
+```php
+$request = Request::createFromGlobals();
+$response = $router->match($request);
+$response->send();
+```
+
+If you return an instance of `Response` from your closure it will be sent back un-touched. If however you return something else, it will be wrapped in an instance of `Response` with your return value as the content.
+
+#### 404
+If no route matches the request, a `Response` object will be returned with it's status code set to `404`;
