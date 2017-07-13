@@ -30,12 +30,12 @@ $router->map(['GET', 'POST'], 'posts/list', function () {
 `map()` takes 3 parameters:
 
 - `methods` (array): list of matching request methods, valid values:
-    + 'GET'
-    + 'POST'
-    + 'PUT'
-    + 'PATCH'
-    + 'DELETE'
-    + 'OPTIONS'
+    + `GET`
+    + `POST`
+    + `PUT`
+    + `PATCH`
+    + `DELETE`
+    + `OPTIONS`
 - `uri` (string): The URI to match against
 - `action`  (function|string): Either a closure or a Controller string
 
