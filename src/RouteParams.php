@@ -28,12 +28,13 @@ class RouteParams implements \Iterator
 
     public function current()
     {
-        return $this->params[$this->position];
+        return $this->params[$this->key()];
     }
 
     public function key()
     {
-        return $this->position;
+        $keys = array_keys($this->params);
+        return $keys[$this->position];
     }
 
     public function next()
@@ -43,6 +44,6 @@ class RouteParams implements \Iterator
 
     public function valid()
     {
-        return isset($this->params[$this->position]);
+        return $this->position < count($this->params);
     }
 }
