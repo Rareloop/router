@@ -13,6 +13,7 @@ use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\Router;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class RouterTest extends TestCase
 {
@@ -111,6 +112,42 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function match_returns_a_response_object()
+    {
+        $request = Request::create('test/123', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('test/123', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertInstanceOf(Response::class, $response);
+    }
+
+    // /** @test */
+    // public function match_returns_a_404_response_object_when_route_is_not_found()
+    // {
+    //     $request = Request::create('test/123', 'GET');
+    //     $router = new Router;
+    //     $count = 0;
+
+    //     $route = $router->get('test/123', function () use (&$count) {
+    //         $count++;
+
+    //         return 'abc123';
+    //     });
+    //     $response = $router->match($request);
+
+    //     $this->assertSame(1, $count);
+    //     $this->assertInstanceOf(Response::class, $response);
+    // }
+
+    /** @test */
     public function match_works_with_a_closure()
     {
         $request = Request::create('test/123', 'GET');
@@ -125,7 +162,7 @@ class RouterTest extends TestCase
         $response = $router->match($request);
 
         $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response);
+        $this->assertSame('abc123', $response->getContent());
     }
 
     /** @test */
@@ -137,7 +174,7 @@ class RouterTest extends TestCase
         $route = $router->get('test/123', 'Rareloop\Router\Test\Controllers\TestController@returnHelloWorld');
         $response = $router->match($request);
 
-        $this->assertSame('Hello World', $response);
+        $this->assertSame('Hello World', $response->getContent());
     }
 
     /** @test */
@@ -268,8 +305,9 @@ class RouterTest extends TestCase
                 return 'abc123';
             });
         });
+        $response = $router->match($request);
 
         $this->assertSame(1, $count);
-        $this->assertSame('abc123', $router->match($request));
+        $this->assertSame('abc123', $response->getContent());
     }
 }

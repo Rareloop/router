@@ -11,6 +11,7 @@ use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class Router implements Routable
 {
@@ -74,10 +75,20 @@ class Router implements Routable
         if (is_callable($altoRoute['target'])) {
             if (isset($altoRoute['params'])) {
                 $params = new RouteParams($altoRoute['params']);
-                return call_user_func($altoRoute['target'], $params);
+                $returnValue = call_user_func($altoRoute['target'], $params);
             } else {
-                return call_user_func($altoRoute['target']);
+                $returnValue = call_user_func($altoRoute['target']);
             }
+
+            if (!($returnValue instanceof Response)) {
+                $returnValue = new Response(
+                    $returnValue,
+                    Response::HTTP_OK,
+                    ['content-type' => 'text/html']
+                );
+            }
+
+            return $returnValue;
         }
     }
 
