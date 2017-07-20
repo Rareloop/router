@@ -588,4 +588,30 @@ class RouterTest extends TestCase
         $this->assertSame(1, $count);
         $this->assertSame('abc123', $response->getContent());
     }
+
+    /** @test */
+    public function can_update_base_path_after_match_has_been_called()
+    {
+        $router = new Router;
+        $router->setBasePath('/base-path/');
+        $count = 0;
+
+        $router->get('prefix/all', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+
+        $request1 = Request::create('/base-path/prefix/all', 'GET');
+        $response1 = $router->match($request1);
+
+        $router->setBasePath('/updated-base-path/');
+
+        $request2 = Request::create('/updated-base-path/prefix/all', 'GET');
+        $response2 = $router->match($request2);
+
+        $this->assertSame(2, $count);
+        $this->assertSame('abc123', $response1->getContent());
+        $this->assertSame('abc123', $response2->getContent());
+    }
 }

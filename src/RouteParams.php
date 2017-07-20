@@ -15,7 +15,7 @@ class RouteParams implements \Iterator
     public function __get($key)
     {
         if (!isset($this->params[$key])) {
-            trigger_error('undefined property ' . $key);
+            return null;
         }
 
         return $this->params[$key];

@@ -35,4 +35,12 @@ class RouterParamsTest extends TestCase
         $this->assertSame(['key1', 'key2', 'key3'], $keys);
         $this->assertSame(['value1', 'value2', 'value3'], $values);
     }
+
+    /** @test */
+    public function return_null_when_a_key_is_not_found()
+    {
+        $params = new RouteParams(['key' => 'value']);
+
+        $this->assertNull($params->invalid);
+    }
 }

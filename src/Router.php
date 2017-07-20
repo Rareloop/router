@@ -2,7 +2,7 @@
 
 namespace Rareloop\Router;
 
-use Rareloop\Router\AltoRouter\AltoRouter;
+use \AltoRouter;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
@@ -31,6 +31,9 @@ class Router implements Routable
     public function setBasePath($basePath)
     {
         $this->basePath = Formatting::addLeadingSlash(Formatting::addTrailingSlash($basePath));
+
+        // Force the router to rebuild next time we need it
+        $this->altoRoutesCreated = false;
     }
 
     private function addRoute(Route $route)
@@ -61,6 +64,10 @@ class Router implements Routable
 
     private function createAltoRoutes()
     {
+        if ($this->altoRoutesCreated) {
+            return;
+        }
+
         $this->altoRouter = new AltoRouter();
         $this->altoRouter->setBasePath($this->basePath);
         $this->altoRoutesCreated = true;
