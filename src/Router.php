@@ -25,14 +25,12 @@ class Router implements Routable
 
     public function __construct()
     {
-        $this->altoRouter = new AltoRouter();
         $this->setBasePath('/');
     }
 
     public function setBasePath($basePath)
     {
         $this->basePath = Formatting::addLeadingSlash(Formatting::addTrailingSlash($basePath));
-        $this->altoRouter->setBasePath($this->basePath);
     }
 
     private function addRoute(Route $route)
@@ -63,6 +61,8 @@ class Router implements Routable
 
     private function createAltoRoutes()
     {
+        $this->altoRouter = new AltoRouter();
+        $this->altoRouter->setBasePath($this->basePath);
         $this->altoRoutesCreated = true;
 
         foreach ($this->routes as $route) {

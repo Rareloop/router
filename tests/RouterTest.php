@@ -383,6 +383,17 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function can_generate_canonical_uri_after_match_has_been_called()
+    {
+        $router = new Router;
+
+        $route = $router->get('/posts/all', function () {})->name('test.name');
+        $router->match(Request::create('/does/not/match', 'GET'));
+
+        $this->assertSame('/posts/all/', $router->url('test.name'));
+    }
+
+    /** @test */
     public function adding_routes_after_calling_url_throws_an_exception()
     {
         $this->expectException(TooLateToAddNewRouteException::class);
