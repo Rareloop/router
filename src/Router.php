@@ -104,12 +104,8 @@ class Router implements Routable
         }
 
         // Call the target with any resolved params
-        if (isset($altoRoute['params'])) {
-            $params = new RouteParams($altoRoute['params']);
-            $returnValue = call_user_func($altoRoute['target'], $params);
-        } else {
-            $returnValue = call_user_func($altoRoute['target']);
-        }
+        $params = new RouteParams($altoRoute['params']);
+        $returnValue = call_user_func($altoRoute['target'], $params);
 
         // Ensure that we return an instance of a Response object
         if (!($returnValue instanceof Response)) {
