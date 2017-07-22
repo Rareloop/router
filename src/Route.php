@@ -2,6 +2,7 @@
 
 namespace Rareloop\Router;
 
+use Psr\Container\ContainerInterface;
 use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
@@ -13,9 +14,12 @@ class Route
     private $methods = [];
     private $action;
     private $name;
+    private $container = null;
 
-    public function __construct(array $methods, string $uri, $action)
+    public function __construct(array $methods, string $uri, $action, ContainerInterface $container = null)
     {
+        $this->container = $container;
+
         $this->methods = $methods;
         $this->setUri($uri);
         $this->setAction($action);
@@ -36,12 +40,16 @@ class Route
         $this->action = $action;
     }
 
-    private static function convertClassStringToClosure($string)
+    private function convertClassStringToClosure($string)
     {
         @list($className, $method) = explode('@', $string);
 
         if (!isset($className) || !isset($method)) {
             throw new RouteClassStringParseException('Could not parse route controller from string: `' . $string . '`');
+        }
+
+        if (isset($this->container)) {
+            return [$className, $method];
         }
 
         if (!class_exists($className)) {

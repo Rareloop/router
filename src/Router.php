@@ -2,7 +2,9 @@
 
 namespace Rareloop\Router;
 
-use \AltoRouter;
+use Invoker\Invoker;
+use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
+use Psr\Container\ContainerInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
@@ -13,6 +15,7 @@ use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use \AltoRouter;
 
 class Router implements Routable
 {
@@ -23,9 +26,29 @@ class Router implements Routable
     private $altoRoutesCreated = false;
     private $basePath;
 
-    public function __construct()
+    private $container = null;
+    private $invoker = null;
+
+    public function __construct(ContainerInterface $container = null)
     {
+        if (isset($container)) {
+            $this->setContainer($container);
+        }
+
         $this->setBasePath('/');
+    }
+
+    private function setContainer(ContainerInterface $container)
+    {
+        $this->container = $container;
+
+        // Create an invoker for this container. This allows us to use the `call()` method even if
+        // the container doesn't support it natively
+        $this->invoker = new Invoker(null, $this->container);
+
+        // Allow the invoker to resolve dependencies via Type Hinting
+        $containerResolver = new TypeHintContainerResolver($this->container);
+        $this->invoker->getParameterResolver()->prependResolver($containerResolver);
     }
 
     public function setBasePath($basePath)
@@ -55,7 +78,7 @@ class Router implements Routable
         // Force all verbs to be uppercase
         $verbs = array_map('strtoupper', $verbs);
 
-        $route = new Route($verbs, $uri, $callback);
+        $route = new Route($verbs, $uri, $callback, $this->container);
 
         $this->addRoute($route);
 
@@ -98,25 +121,54 @@ class Router implements Routable
 
         $altoRoute = $this->altoRouter->match($request->getRequestUri(), $request->getMethod());
 
-        // Return a 404 if we don't find anything
-        if (!is_callable($altoRoute['target'])) {
+        $target = $altoRoute['target'];
+        $params = new RouteParams($altoRoute['params'] ?? []);
+
+        // Return a 404 if the target isn't invokable
+        if (!$this->isTargetInvokable($target)) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
 
-        // Call the target with any resolved params
-        $params = new RouteParams($altoRoute['params']);
-        $returnValue = call_user_func($altoRoute['target'], $params);
+        $output = $this->invokeRouteAction($target, $params);
 
-        // Ensure that we return an instance of a Response object
-        if (!($returnValue instanceof Response)) {
-            $returnValue = new Response(
-                $returnValue,
-                Response::HTTP_OK,
-                ['content-type' => 'text/html']
-            );
+        return $this->createResponse($output);
+    }
+
+    private function createResponse($output)
+    {
+        if ($output instanceof Response) {
+            return $output;
         }
 
-        return $returnValue;
+        return new Response(
+            $output,
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
+    }
+
+    private function isTargetInvokable($target)
+    {
+        if ($this->hasContainer()) {
+            return is_callable($target) || (is_array($target) && count($target) === 2);
+        }
+
+        return is_callable($target);
+    }
+
+    private function hasContainer()
+    {
+        return isset($this->invoker);
+    }
+
+    private function invokeRouteAction($target, RouteParams $params)
+    {
+        if ($this->hasContainer()) {
+            return $this->invoker->call($target, $params->toArray());
+        } else {
+            // Call the target with any resolved params
+            return call_user_func($target, $params);
+        }
     }
 
     public function has(string $name)

@@ -43,4 +43,13 @@ class RouterParamsTest extends TestCase
 
         $this->assertNull($params->invalid);
     }
+
+    /** @test */
+    public function can_get_params_as_array()
+    {
+        $data = ['key1' => 'value1', 'key2' => 'value2'];
+        $params = new RouteParams($data);
+
+        $this->assertSame($data, $params->toArray());
+    }
 }
