@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Route;
 use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\TestController;
+use Rareloop\Router\Test\Requests\TestRequest;
 use Rareloop\Router\Test\Services\TestService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -203,5 +204,52 @@ class RouterDITest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('$postId: 1 $commentId: 2 TestService: abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function can_inject_request_object()
+    {
+        $container = ContainerBuilder::buildDevContainer();
+        $request = Request::create('/test/route', 'GET');
+        $router = new Router($container);
+
+        $router->get('/test/route', function (Request $injectedRequest) use ($request) {
+            $this->assertSame($request, $injectedRequest);
+
+            return 'abc123';
+        });
+
+
+        $response = $router->match($request);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getContent());
+    }
+
+    /** @test */
+    public function can_inject_request_sub_class()
+    {
+        $container = ContainerBuilder::buildDevContainer();
+        $request = Request::create('/test/route', 'GET');
+        $router = new Router($container);
+
+        $count = 0;
+
+        $router->get('/test/route', function (TestRequest $injectedRequest) use ($request, &$count) {
+            $count++;
+
+            $this->assertInstanceOf(TestRequest::class, $injectedRequest);
+            $this->assertSame('GET', $injectedRequest->getMethod());
+            $this->assertSame('/test/route', $injectedRequest->getRequestUri());
+
+            return 'abc123';
+        });
+
+
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getContent());
     }
 }

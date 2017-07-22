@@ -2,12 +2,11 @@
 
 namespace Rareloop\Router;
 
-use Invoker\Invoker;
-use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
 use Psr\Container\ContainerInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
+use Rareloop\Router\Invoker;
 use Rareloop\Router\Routable;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
@@ -44,11 +43,7 @@ class Router implements Routable
 
         // Create an invoker for this container. This allows us to use the `call()` method even if
         // the container doesn't support it natively
-        $this->invoker = new Invoker(null, $this->container);
-
-        // Allow the invoker to resolve dependencies via Type Hinting
-        $containerResolver = new TypeHintContainerResolver($this->container);
-        $this->invoker->getParameterResolver()->prependResolver($containerResolver);
+        $this->invoker = new Invoker($this->container);
     }
 
     public function setBasePath($basePath)
@@ -129,7 +124,7 @@ class Router implements Routable
             return new Response('', Response::HTTP_NOT_FOUND);
         }
 
-        $output = $this->invokeRouteAction($target, $params);
+        $output = $this->invokeRouteAction($target, $request, $params);
 
         return $this->createResponse($output);
     }
@@ -161,10 +156,10 @@ class Router implements Routable
         return isset($this->invoker);
     }
 
-    private function invokeRouteAction($target, RouteParams $params)
+    private function invokeRouteAction($target, Request $request, RouteParams $params)
     {
         if ($this->hasContainer()) {
-            return $this->invoker->call($target, $params->toArray());
+            return $this->invoker->setRequest($request)->call($target, $params->toArray());
         } else {
             // Call the target with any resolved params
             return call_user_func($target, $params);
