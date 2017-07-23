@@ -5,7 +5,7 @@ namespace Rareloop\Router;
 use Invoker\Invoker as DIInvoker;
 use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Zend\Diactoros\ServerRequest;
 
 class Invoker extends DIInvoker
 {
@@ -25,7 +25,7 @@ class Invoker extends DIInvoker
         $resolver->prependResolver($this->requestResolver);
     }
 
-    public function setRequest(Request $request) : Invoker
+    public function setRequest(ServerRequest $request) : Invoker
     {
         $this->requestResolver->setRequest($request);
 

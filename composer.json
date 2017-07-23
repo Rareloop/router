@@ -18,9 +18,10 @@
     "require": {
         "php": "^7.0",
         "altorouter/altorouter": "^1.1",
+        "php-di/invoker": "^1.3.2",
         "psr/container": "^1.0",
-        "symfony/http-foundation": "^3.3",
-        "php-di/invoker": "^1.3.2"
+        "psr/http-message": "^1.0",
+        "zendframework/zend-diactoros": "^1.4"
     },
     "require-dev": {
         "php-di/php-di": "^5.4.1",

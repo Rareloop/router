@@ -2,13 +2,15 @@
 
 namespace Rareloop\Router;
 
+use Psr\Http\Message\ResponseInterface;
 use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
 use Rareloop\Router\Invoker;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Zend\Diactoros\Response\EmptyResponse;
+use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\ServerRequest;
 
 class Route
 {
@@ -73,7 +75,7 @@ class Route
         return isset($this->invoker);
     }
 
-    public function handle(Request $request, RouteParams $params) : Response
+    public function handle(ServerRequest $request, RouteParams $params) : ResponseInterface
     {
         if ($this->isUsingContainer()) {
             $output = $this->invoker->setRequest($request)->call($this->action, $params->toArray());
@@ -85,17 +87,17 @@ class Route
         return $this->createResponse($output);
     }
 
-    private function createResponse($output) : Response
+    private function createResponse($output) : ResponseInterface
     {
-        if ($output instanceof Response) {
+        if (empty($output)) {
+            return new EmptyResponse();
+        }
+
+        if ($output instanceof ResponseInterface) {
             return $output;
         }
 
-        return new Response(
-            $output,
-            Response::HTTP_OK,
-            ['content-type' => 'text/html']
-        );
+        return new HtmlResponse($output);
     }
 
     public function getUri()

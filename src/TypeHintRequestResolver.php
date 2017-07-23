@@ -3,8 +3,9 @@
 namespace Rareloop\Router;
 
 use Invoker\ParameterResolver\ParameterResolver;
+use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunctionAbstract;
-use Symfony\Component\HttpFoundation\Request;
+use Zend\Diactoros\ServerRequest;
 
 class TypeHintRequestResolver implements ParameterResolver
 {
@@ -28,10 +29,8 @@ class TypeHintRequestResolver implements ParameterResolver
                 continue;
             }
 
-            if ($parameterClass->name === Request::class) {
-                $resolvedParameters[Request::class] = $this->request;
-            } elseif ($parameterClass->isSubclassOf(Request::class)) {
-                $resolvedParameters[Request::class] = $this->createRequestOfType($parameterClass);
+            if ($parameterClass->implementsInterface(ServerRequestInterface::class)) {
+                $resolvedParameters[$parameterClass->name] = $this->createRequestOfType($parameterClass);
             }
         }
 
@@ -40,21 +39,21 @@ class TypeHintRequestResolver implements ParameterResolver
 
     private function createRequestOfType(\ReflectionClass $requestClass)
     {
-        $createMethod = $requestClass->getMethod('create');
-
-        return $createMethod->invoke(
-            null,
-            $this->request->getRequestUri(),
+        return $requestClass->newInstance(
+            $this->request->getServerParams(),
+            $this->request->getUploadedFiles(),
+            $this->request->getUri(),
             $this->request->getMethod(),
-            $this->request->request->all(),
-            $this->request->cookies->all(),
-            $this->request->files->all(),
-            $this->request->server->all(),
-            $this->request->getContent()
+            $this->request->getBody(),
+            $this->request->getHeaders(),
+            $this->request->getCookieParams(),
+            $this->request->getQueryParams(),
+            $this->request->getBody()->getContents(),
+            $this->request->getProtocolVersion()
         );
     }
 
-    public function setRequest(Request $request)
+    public function setRequest(ServerRequest $request)
     {
         $this->request = $request;
     }

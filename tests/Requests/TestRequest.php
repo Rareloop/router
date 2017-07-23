@@ -2,9 +2,9 @@
 
 namespace Rareloop\Router\Test\Requests;
 
-use Symfony\Component\HttpFoundation\Request;
+use Zend\Diactoros\ServerRequest;
 
-class TestRequest extends Request
+class TestRequest extends ServerRequest
 {
 
 }

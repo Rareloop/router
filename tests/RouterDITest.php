@@ -9,8 +9,7 @@ use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\TestController;
 use Rareloop\Router\Test\Requests\TestRequest;
 use Rareloop\Router\Test\Services\TestService;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Zend\Diactoros\ServerRequest;
 
 class RouterDITest extends TestCase
 {
@@ -50,12 +49,12 @@ class RouterDITest extends TestCase
             return 'abc';
         });
 
-        $request = Request::create('/posts/1/comments/2', 'GET');
+        $request = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
         $this->assertSame(1, $count);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getContent());
+        $this->assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -77,12 +76,12 @@ class RouterDITest extends TestCase
             return 'abc';
         });
 
-        $request = Request::create('/test/route', 'GET');
+        $request = new ServerRequest([], [], '/test/route', 'GET');
         $response = $router->match($request);
 
         $this->assertSame(1, $count);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getContent());
+        $this->assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -106,12 +105,12 @@ class RouterDITest extends TestCase
             return 'abc';
         });
 
-        $request = Request::create('/posts/1/comments/2', 'GET');
+        $request = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
         $this->assertSame(1, $count);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getContent());
+        $this->assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -130,12 +129,12 @@ class RouterDITest extends TestCase
             return 'abc';
         });
 
-        $request = Request::create('/posts/1/comments/2', 'GET');
+        $request = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
         $this->assertSame(1, $count);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getContent());
+        $this->assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -148,7 +147,7 @@ class RouterDITest extends TestCase
 
         $router->get('/test/route', function (UndefinedType $test) {});
 
-        $request = Request::create('/test/route', 'GET');
+        $request = new ServerRequest([], [], '/test/route', 'GET');
         $response = $router->match($request);
     }
 
@@ -161,11 +160,11 @@ class RouterDITest extends TestCase
 
         $router->get('/posts/{postId}/comments/{commentId}', 'TestController@expectsInjectedParams');
 
-        $request = Request::create('/posts/1/comments/2', 'GET');
+        $request = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('$postId: 1 $commentId: 2', $response->getContent());
+        $this->assertSame('$postId: 1 $commentId: 2', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -180,11 +179,11 @@ class RouterDITest extends TestCase
 
         $router->get('/test/route', 'TestController@typeHintTestService');
 
-        $request = Request::create('/test/route', 'GET');
+        $request = new ServerRequest([], [], '/test/route', 'GET');
         $response = $router->match($request);
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getContent());
+        $this->assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -199,48 +198,27 @@ class RouterDITest extends TestCase
 
         $router->get('/posts/{postId}/comments/{commentId}', 'TestController@typeHintTestServiceWithParams');
 
-        $request = Request::create('/posts/1/comments/2', 'GET');
+        $request = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('$postId: 1 $commentId: 2 TestService: abc123', $response->getContent());
+        $this->assertSame('$postId: 1 $commentId: 2 TestService: abc123', $response->getBody()->getContents());
     }
 
     /** @test */
     public function can_inject_request_object()
     {
         $container = ContainerBuilder::buildDevContainer();
-        $request = Request::create('/test/route', 'GET');
+        $request = new ServerRequest([], [], '/test/route', 'GET');
         $router = new Router($container);
-
-        $router->get('/test/route', function (Request $injectedRequest) use ($request) {
-            $this->assertSame($request, $injectedRequest);
-
-            return 'abc123';
-        });
-
-
-        $response = $router->match($request);
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getContent());
-    }
-
-    /** @test */
-    public function can_inject_request_sub_class()
-    {
-        $container = ContainerBuilder::buildDevContainer();
-        $request = Request::create('/test/route', 'GET');
-        $router = new Router($container);
-
         $count = 0;
 
-        $router->get('/test/route', function (TestRequest $injectedRequest) use ($request, &$count) {
+        $router->get('/test/route', function (ServerRequest $injectedRequest) use ($request, &$count) {
             $count++;
 
-            $this->assertInstanceOf(TestRequest::class, $injectedRequest);
+            $this->assertInstanceOf(ServerRequest::class, $injectedRequest);
             $this->assertSame('GET', $injectedRequest->getMethod());
-            $this->assertSame('/test/route', $injectedRequest->getRequestUri());
+            $this->assertSame('/test/route', $injectedRequest->getUri()->getPath());
 
             return 'abc123';
         });
@@ -250,6 +228,33 @@ class RouterDITest extends TestCase
 
         $this->assertSame(1, $count);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getContent());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+    }
+
+    /** @test */
+    public function can_inject_request_sub_class()
+    {
+        $container = ContainerBuilder::buildDevContainer();
+        $request = new ServerRequest([], [], '/test/route', 'GET');
+        $router = new Router($container);
+
+        $count = 0;
+
+        $router->get('/test/route', function (TestRequest $injectedRequest) use ($request, &$count) {
+            $count++;
+
+            $this->assertInstanceOf(TestRequest::class, $injectedRequest);
+            $this->assertSame('GET', $injectedRequest->getMethod());
+            $this->assertSame('/test/route', $injectedRequest->getUri()->getPath());
+
+            return 'abc123';
+        });
+
+
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
     }
 }

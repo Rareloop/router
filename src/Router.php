@@ -3,6 +3,7 @@
 namespace Rareloop\Router;
 
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
@@ -12,8 +13,7 @@ use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Zend\Diactoros\Response\TextResponse;
 use \AltoRouter;
 
 class Router implements Routable
@@ -110,17 +110,17 @@ class Router implements Routable
         }
     }
 
-    public function match(Request $request)
+    public function match(ServerRequestInterface $request)
     {
         $this->createAltoRoutes();
 
-        $altoRoute = $this->altoRouter->match($request->getRequestUri(), $request->getMethod());
+        $altoRoute = $this->altoRouter->match($request->getUri()->getPath(), $request->getMethod());
 
         $route = $altoRoute['target'];
         $params = new RouteParams($altoRoute['params'] ?? []);
 
         if (!$route) {
-            return new Response('', Response::HTTP_NOT_FOUND);
+            return new TextResponse('Resource not found', 404);
         }
 
         return $route->handle($request, $params);
