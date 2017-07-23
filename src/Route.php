@@ -110,11 +110,6 @@ class Route
         return $this->methods;
     }
 
-    public function getAction()
-    {
-        return $this->action;
-    }
-
     public function name(string $name)
     {
         if (isset($this->name)) {
