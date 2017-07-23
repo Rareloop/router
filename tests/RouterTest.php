@@ -4,6 +4,7 @@ namespace Rareloop\Router\Test;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
@@ -632,5 +633,30 @@ class RouterTest extends TestCase
         $this->assertSame(2, $count);
         $this->assertSame('abc123', $response1->getBody()->getContents());
         $this->assertSame('abc123', $response2->getBody()->getContents());
+    }
+
+    /** @test */
+    public function can_add_middleware_as_a_closure_to_a_route()
+    {
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        })->middleware(function (ServerRequestInterface $request, callable $next) use (&$count) {
+            $count++;
+
+            $response = $next($request);
+            return $response->withHeader('X-key', 'value');
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(2, $count);
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertTrue($response->hasHeader('X-key'));
+        $this->assertSame('value', $response->getHeader('X-key')[0]);
     }
 }

@@ -11,6 +11,7 @@ use Rareloop\Router\Invoker;
 use Zend\Diactoros\Response\EmptyResponse;
 use Zend\Diactoros\Response\HtmlResponse;
 use Zend\Diactoros\ServerRequest;
+use mindplay\middleman\Dispatcher;
 
 class Route
 {
@@ -19,6 +20,7 @@ class Route
     private $action;
     private $name;
     private $invoker = null;
+    private $middleware = [];
 
     public function __construct(array $methods, string $uri, $action, Invoker $invoker = null)
     {
@@ -77,14 +79,29 @@ class Route
 
     public function handle(ServerRequest $request, RouteParams $params) : ResponseInterface
     {
-        if ($this->isUsingContainer()) {
-            $output = $this->invoker->setRequest($request)->call($this->action, $params->toArray());
-        } else {
-            // Call the target with any resolved params
-            $output = call_user_func($this->action, $params);
-        }
+        // Get all the middleware registered for this route
+        $middlewares = $this->gatherMiddleware();
 
-        return $this->createResponse($output);
+        // Add our route handler as the last item
+        $middlewares[] = function ($request) use ($params) {
+            if ($this->isUsingContainer()) {
+                $output = $this->invoker->setRequest($request)->call($this->action, $params->toArray());
+            } else {
+                // Call the target with any resolved params
+                $output = call_user_func($this->action, $params);
+            }
+
+            return $this->createResponse($output);
+        };
+
+        // Create and process the dispatcher
+        $dispatcher = new Dispatcher($middlewares);
+        return $dispatcher->dispatch($request);
+    }
+
+    private function gatherMiddleware(): array
+    {
+        return array_merge([], $this->middleware);
     }
 
     private function createResponse($output) : ResponseInterface
@@ -117,6 +134,17 @@ class Route
         }
 
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function middleware()
+    {
+        $args = func_get_args();
+
+        foreach ($args as $middleware) {
+            $this->middleware[] = $middleware;
+        }
 
         return $this;
     }
