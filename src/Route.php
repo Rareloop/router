@@ -2,11 +2,13 @@
 
 namespace Rareloop\Router;
 
-use Psr\Container\ContainerInterface;
 use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
+use Rareloop\Router\Invoker;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class Route
 {
@@ -14,11 +16,11 @@ class Route
     private $methods = [];
     private $action;
     private $name;
-    private $container = null;
+    private $invoker = null;
 
-    public function __construct(array $methods, string $uri, $action, ContainerInterface $container = null)
+    public function __construct(array $methods, string $uri, $action, Invoker $invoker = null)
     {
-        $this->container = $container;
+        $this->invoker = $invoker;
 
         $this->methods = $methods;
         $this->setUri($uri);
@@ -48,7 +50,7 @@ class Route
             throw new RouteClassStringParseException('Could not parse route controller from string: `' . $string . '`');
         }
 
-        if (isset($this->container)) {
+        if (isset($this->invoker)) {
             return [$className, $method];
         }
 
@@ -64,6 +66,36 @@ class Route
             $controller = new $className;
             return $controller->$method($params);
         };
+    }
+
+    private function isUsingContainer()
+    {
+        return isset($this->invoker);
+    }
+
+    public function handle(Request $request, RouteParams $params) : Response
+    {
+        if ($this->isUsingContainer()) {
+            $output = $this->invoker->setRequest($request)->call($this->action, $params->toArray());
+        } else {
+            // Call the target with any resolved params
+            $output = call_user_func($this->action, $params);
+        }
+
+        return $this->createResponse($output);
+    }
+
+    private function createResponse($output) : Response
+    {
+        if ($output instanceof Response) {
+            return $output;
+        }
+
+        return new Response(
+            $output,
+            Response::HTTP_OK,
+            ['content-type' => 'text/html']
+        );
     }
 
     public function getUri()

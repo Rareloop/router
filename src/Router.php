@@ -73,7 +73,7 @@ class Router implements Routable
         // Force all verbs to be uppercase
         $verbs = array_map('strtoupper', $verbs);
 
-        $route = new Route($verbs, $uri, $callback, $this->container);
+        $route = new Route($verbs, $uri, $callback, $this->invoker);
 
         $this->addRoute($route);
 
@@ -97,7 +97,7 @@ class Router implements Routable
             $this->altoRouter->map(
                 implode('|', $route->getMethods()),
                 Formatting::addTrailingSlash($uri),
-                $route->getAction(),
+                $route,
                 $route->getName() ?? null
             );
 
@@ -105,7 +105,7 @@ class Router implements Routable
             $this->altoRouter->map(
                 implode('|', $route->getMethods()),
                 Formatting::removeTrailingSlash($uri),
-                $route->getAction()
+                $route
             );
         }
     }
@@ -116,54 +116,14 @@ class Router implements Routable
 
         $altoRoute = $this->altoRouter->match($request->getRequestUri(), $request->getMethod());
 
-        $target = $altoRoute['target'];
+        $route = $altoRoute['target'];
         $params = new RouteParams($altoRoute['params'] ?? []);
 
-        // Return a 404 if the target isn't invokable
-        if (!$this->isTargetInvokable($target)) {
+        if (!$route) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
 
-        $output = $this->invokeRouteAction($target, $request, $params);
-
-        return $this->createResponse($output);
-    }
-
-    private function createResponse($output)
-    {
-        if ($output instanceof Response) {
-            return $output;
-        }
-
-        return new Response(
-            $output,
-            Response::HTTP_OK,
-            ['content-type' => 'text/html']
-        );
-    }
-
-    private function isTargetInvokable($target)
-    {
-        if ($this->hasContainer()) {
-            return is_callable($target) || (is_array($target) && count($target) === 2);
-        }
-
-        return is_callable($target);
-    }
-
-    private function hasContainer()
-    {
-        return isset($this->invoker);
-    }
-
-    private function invokeRouteAction($target, Request $request, RouteParams $params)
-    {
-        if ($this->hasContainer()) {
-            return $this->invoker->setRequest($request)->call($target, $params->toArray());
-        } else {
-            // Call the target with any resolved params
-            return call_user_func($target, $params);
-        }
+        return $route->handle($request, $params);
     }
 
     public function has(string $name)
