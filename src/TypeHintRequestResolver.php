@@ -48,7 +48,7 @@ class TypeHintRequestResolver implements ParameterResolver
             $this->request->getHeaders(),
             $this->request->getCookieParams(),
             $this->request->getQueryParams(),
-            $this->request->getBody()->getContents(),
+            $this->request->getParsedBody(),
             $this->request->getProtocolVersion()
         );
     }

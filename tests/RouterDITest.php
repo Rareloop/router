@@ -232,6 +232,33 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
+    public function can_inject_request_object_with_a_body()
+    {
+        $container = ContainerBuilder::buildDevContainer();
+        $request = new ServerRequest([], [], '/test/route', 'POST', 'php://input', [], [], [], 'post body');
+        $router = new Router($container);
+        $count = 0;
+
+        $router->post('/test/route', function (ServerRequest $injectedRequest) use ($request, &$count) {
+            $count++;
+
+            $this->assertInstanceOf(ServerRequest::class, $injectedRequest);
+            $this->assertSame('POST', $injectedRequest->getMethod());
+            $this->assertSame('/test/route', $injectedRequest->getUri()->getPath());
+            $this->assertSame('post body', $injectedRequest->getParsedBody());
+
+            return 'abc123';
+        });
+
+
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+    }
+
+    /** @test */
     public function can_inject_request_sub_class()
     {
         $container = ContainerBuilder::buildDevContainer();
