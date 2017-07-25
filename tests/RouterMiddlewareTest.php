@@ -96,4 +96,24 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc', $response->getHeader('X-Key1')[0]);
         $this->assertSame('123', $response->getHeader('X-Key2')[0]);
     }
+
+    /** @test */
+    public function can_add_multiple_middleware_to_a_route_as_an_array()
+    {
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router;
+
+        $router->get('/test/123', function () {})->middleware([
+            new AddHeaderMiddleware('X-Key1', 'abc'),
+            new AddHeaderMiddleware('X-Key2', '123'),
+        ]);
+
+        $response = $router->match($request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertTrue($response->hasHeader('X-Key1'));
+        $this->assertTrue($response->hasHeader('X-Key2'));
+        $this->assertSame('abc', $response->getHeader('X-Key1')[0]);
+        $this->assertSame('123', $response->getHeader('X-Key2')[0]);
+    }
 }

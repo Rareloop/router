@@ -143,7 +143,11 @@ class Route
         $args = func_get_args();
 
         foreach ($args as $middleware) {
-            $this->middleware[] = $middleware;
+            if (is_array($middleware)) {
+                $this->middleware += $middleware;
+            } else {
+                $this->middleware[] = $middleware;
+            }
         }
 
         return $this;
