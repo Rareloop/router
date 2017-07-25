@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Route;
+use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
 use Zend\Diactoros\ServerRequest;
@@ -115,5 +116,53 @@ class RouterMiddlewareTest extends TestCase
         $this->assertTrue($response->hasHeader('X-Key2'));
         $this->assertSame('abc', $response->getHeader('X-Key1')[0]);
         $this->assertSame('123', $response->getHeader('X-Key2')[0]);
+    }
+
+    /** @test */
+    public function can_add_middleware_to_a_group()
+    {
+        $request = new ServerRequest([], [], '/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group(['middleware' => [new AddHeaderMiddleware('X-Key', 'abc')]], function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->get('all', function () {
+                return 'abc123';
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+        $this->assertTrue($response->hasHeader('X-Key'));
+        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+    }
+
+    /** @test */
+    public function can_add_single_middleware_to_a_group_without_wrapping_in_array()
+    {
+        $request = new ServerRequest([], [], '/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group(['middleware' => new AddHeaderMiddleware('X-Key', 'abc')], function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->get('all', function () {
+                return 'abc123';
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+        $this->assertTrue($response->hasHeader('X-Key'));
+        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 }

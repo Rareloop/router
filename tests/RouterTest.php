@@ -463,6 +463,50 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function can_add_routes_in_a_group_using_array_as_first_param()
+    {
+        $request = new ServerRequest([], [], '/prefix/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group(['prefix' => 'prefix'], function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->get('all', function () {
+                return 'abc123';
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+    }
+
+    /** @test */
+    public function can_add_routes_in_a_group_using_array_as_first_param_with_no_prefix()
+    {
+        $request = new ServerRequest([], [], '/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group([], function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->get('all', function () {
+                return 'abc123';
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+    }
+
+    /** @test */
     public function group_prefixes_work_with_leading_slash()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
@@ -518,6 +562,33 @@ class RouterTest extends TestCase
             $this->assertInstanceOf(RouteGroup::class, $group);
 
             $group->group('prefix2', function ($group) use (&$count) {
+                $count++;
+                $this->assertInstanceOf(RouteGroup::class, $group);
+
+                $group->get('all', function () {
+                    return 'abc123';
+                });
+            });
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(2, $count);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+    }
+
+    /** @test */
+    public function can_add_routes_in_nested_groups_with_array_syntax()
+    {
+        $request = new ServerRequest([], [], '/prefix/prefix2/all', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $router->group(['prefix' => 'prefix'], function ($group) use (&$count) {
+            $count++;
+            $this->assertInstanceOf(RouteGroup::class, $group);
+
+            $group->group(['prefix' => 'prefix2'], function ($group) use (&$count) {
                 $count++;
                 $this->assertInstanceOf(RouteGroup::class, $group);
 

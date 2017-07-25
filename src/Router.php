@@ -146,9 +146,9 @@ class Router implements Routable
         }
     }
 
-    public function group($prefix, $callback) : Router
+    public function group($params, $callback) : Router
     {
-        $group = new RouteGroup($prefix, $this);
+        $group = new RouteGroup($params, $this);
 
         call_user_func($callback, $group);
 
