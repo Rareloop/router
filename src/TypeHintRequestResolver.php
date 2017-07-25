@@ -30,7 +30,7 @@ class TypeHintRequestResolver implements ParameterResolver
             }
 
             if ($parameterClass->implementsInterface(ServerRequestInterface::class)) {
-                $resolvedParameters[$parameterClass->name] = $this->createRequestOfType($parameterClass);
+                $resolvedParameters[$index] = $this->createRequestOfType($parameterClass);
             }
         }
 
