@@ -15,6 +15,7 @@ use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
 use Zend\Diactoros\Response\TextResponse;
 use \AltoRouter;
+use mindplay\middleman\Dispatcher;
 
 class Router implements Routable
 {
@@ -27,6 +28,7 @@ class Router implements Routable
 
     private $container = null;
     private $invoker = null;
+    private $baseMiddleware = [];
 
     public function __construct(ContainerInterface $container = null)
     {
@@ -123,7 +125,25 @@ class Router implements Routable
             return new TextResponse('Resource not found', 404);
         }
 
-        return $route->handle($request, $params);
+        return $this->handle($route, $request, $params);
+    }
+
+    protected function handle($route, $request, $params)
+    {
+        if (count($this->baseMiddleware) === 0) {
+            return $route->handle($request, $params);
+        }
+
+        // Apply all the base middleware and trigger the route handler as the last in the chain
+        $middlewares = array_merge($this->baseMiddleware, [
+            function ($request) use ($route, $params) {
+                return $route->handle($request, $params);
+            },
+        ]);
+
+        // Create and process the dispatcher
+        $dispatcher = new Dispatcher($middlewares);
+        return $dispatcher->dispatch($request);
     }
 
     public function has(string $name)
@@ -153,5 +173,10 @@ class Router implements Routable
         call_user_func($callback, $group);
 
         return $this;
+    }
+
+    public function setBaseMiddleware(array $middleware)
+    {
+        $this->baseMiddleware = $middleware;
     }
 }

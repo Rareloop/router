@@ -165,4 +165,39 @@ class RouterMiddlewareTest extends TestCase
         $this->assertTrue($response->hasHeader('X-Key'));
         $this->assertSame('abc', $response->getHeader('X-Key')[0]);
     }
+
+    /** @test */
+    public function can_add_base_middleware_to_be_applied_to_all_routes()
+    {
+        $router = new Router;
+        $router->setBaseMiddleware([
+            new AddHeaderMiddleware('X-Key', 'abc'),
+        ]);
+        $count = 0;
+
+        $router->get('one', function () use (&$count) {
+            $count++;
+            return 'abc123';
+        });
+
+        $router->get('two', function () use (&$count) {
+            $count++;
+            return 'abc123';
+        });
+
+        $response1 = $router->match(new ServerRequest([], [], '/one', 'GET'));
+        $response2 = $router->match(new ServerRequest([], [], '/two', 'GET'));
+
+        $this->assertSame(2, $count);
+
+        $this->assertSame(200, $response1->getStatusCode());
+        $this->assertSame('abc123', $response1->getBody()->getContents());
+        $this->assertTrue($response1->hasHeader('X-Key'));
+        $this->assertSame('abc', $response1->getHeader('X-Key')[0]);
+
+        $this->assertSame(200, $response2->getStatusCode());
+        $this->assertSame('abc123', $response2->getBody()->getContents());
+        $this->assertTrue($response2->hasHeader('X-Key'));
+        $this->assertSame('abc', $response2->getHeader('X-Key')[0]);
+    }
 }
