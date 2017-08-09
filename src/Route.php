@@ -91,7 +91,7 @@ class Route
                 $output = call_user_func($this->action, $params);
             }
 
-            return $this->createResponse($output);
+            return ResponseFactory::create($output);
         };
 
         // Create and process the dispatcher
@@ -102,19 +102,6 @@ class Route
     private function gatherMiddleware(): array
     {
         return array_merge([], $this->middleware);
-    }
-
-    private function createResponse($output) : ResponseInterface
-    {
-        if (empty($output)) {
-            return new EmptyResponse();
-        }
-
-        if ($output instanceof ResponseInterface) {
-            return $output;
-        }
-
-        return new HtmlResponse($output);
     }
 
     public function getUri()
