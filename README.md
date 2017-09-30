@@ -118,6 +118,60 @@ $router->group('prefix', function ($group) {
 });
 ```
 
+### Middleware
+PSR-15/7 Middleware can be added to both routes and groups.
+
+#### Adding Middleware to a route
+At it's simplest, adding Middleware to a route can be done by passing an object to the `middleware()` function:
+
+```php
+$middleware = new AddHeaderMiddleware('X-Key1', 'abc');
+
+$router->get('route/uri', '\MyNamespace\TestController@testMethod')->middleware($middleware);
+```
+
+Multiple middleware can be added by passing more params to the `middleware()` function:
+
+```php
+$header = new AddHeaderMiddleware('X-Key1', 'abc');
+$auth = new AuthMiddleware();
+
+$router->get('route/uri', '\MyNamespace\TestController@testMethod')->middleware($header, $auth);
+```
+
+Or alternatively, you can also pass an array of middleware:
+
+```php
+$header = new AddHeaderMiddleware('X-Key1', 'abc');
+$auth = new AuthMiddleware();
+
+$router->get('route/uri', '\MyNamespace\TestController@testMethod')->middleware([$header, $auth]);
+```
+
+#### Adding Middleware to a group
+Middleware can also be added to a group. To do so you need to pass an array as the first parameter of the `group()` function instead of a string.
+
+```php
+$header = new AddHeaderMiddleware('X-Key1', 'abc');
+
+$router->group(['prefix' => 'my-prefix', 'middleware' => $header]), function ($group) {
+    $group->map(['GET'], 'route1', function () {}); // `/my-prefix/route1`
+    $group->map(['GET'], 'route2', function () {}); // `/my-prefix/route2§`
+});
+```
+
+You can also pass an array of middleware if you need more than one:
+
+```php
+$header = new AddHeaderMiddleware('X-Key1', 'abc');
+$auth = new AuthMiddleware();
+
+$router->group(['prefix' => 'my-prefix', 'middleware' => [$header, $auth]]), function ($group) {
+    $group->map(['GET'], 'route1', function () {}); // `/my-prefix/route1`
+    $group->map(['GET'], 'route2', function () {}); // `/my-prefix/route2§`
+});
+```
+
 ### Matching Routes to Requests
 Once you have routes defined, you can attempt to match your current request against them using the `match()` function. `match()` accepts an instance of Symfony's `Request` and returns an instance of Symfony's `Response`:
 
@@ -131,3 +185,31 @@ If you return an instance of `Response` from your closure it will be sent back u
 
 #### 404
 If no route matches the request, a `Response` object will be returned with it's status code set to `404`;
+
+### Using with a Dependency Injection Container
+The router can also be used with a PSR-11 compatible Container of your choosing. This allows you to type hint dependencies in your route closures or Controller methods.
+
+To make use of a container, simply pass it as a parameter to the Router's constructor:
+
+```php
+use MyNamespace\Container;
+use Rareloop\Router\Router;
+
+$container = new Container();
+$router = new Router($container);
+```
+
+After which, your route closures and Controller methods will be automatically type hinted:
+
+```php
+$container = new Container();
+
+$testServiceInstance = new TestService();
+$container->set(TestService::class, $testServiceInstance);
+
+$router = new Router($container);
+
+$router->get('/my/route', function (TestService $service) {
+    // $service is now the same object as $testServiceInstance
+});
+```
