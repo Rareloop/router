@@ -46,4 +46,9 @@ class RouteParams implements \Iterator
     {
         return $this->position < count($this->params);
     }
+
+    public function toArray()
+    {
+        return $this->params;
+    }
 }

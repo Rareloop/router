@@ -2,17 +2,20 @@
 
 namespace Rareloop\Router;
 
-use \AltoRouter;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
+use Rareloop\Router\Invoker;
 use Rareloop\Router\Routable;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Zend\Diactoros\Response\TextResponse;
+use \AltoRouter;
+use mindplay\middleman\Dispatcher;
 
 class Router implements Routable
 {
@@ -23,9 +26,26 @@ class Router implements Routable
     private $altoRoutesCreated = false;
     private $basePath;
 
-    public function __construct()
+    private $container = null;
+    private $invoker = null;
+    private $baseMiddleware = [];
+
+    public function __construct(ContainerInterface $container = null)
     {
+        if (isset($container)) {
+            $this->setContainer($container);
+        }
+
         $this->setBasePath('/');
+    }
+
+    private function setContainer(ContainerInterface $container)
+    {
+        $this->container = $container;
+
+        // Create an invoker for this container. This allows us to use the `call()` method even if
+        // the container doesn't support it natively
+        $this->invoker = new Invoker($this->container);
     }
 
     public function setBasePath($basePath)
@@ -55,7 +75,7 @@ class Router implements Routable
         // Force all verbs to be uppercase
         $verbs = array_map('strtoupper', $verbs);
 
-        $route = new Route($verbs, $uri, $callback);
+        $route = new Route($verbs, $uri, $callback, $this->invoker);
 
         $this->addRoute($route);
 
@@ -79,7 +99,7 @@ class Router implements Routable
             $this->altoRouter->map(
                 implode('|', $route->getMethods()),
                 Formatting::addTrailingSlash($uri),
-                $route->getAction(),
+                $route,
                 $route->getName() ?? null
             );
 
@@ -87,36 +107,43 @@ class Router implements Routable
             $this->altoRouter->map(
                 implode('|', $route->getMethods()),
                 Formatting::removeTrailingSlash($uri),
-                $route->getAction()
+                $route
             );
         }
     }
 
-    public function match(Request $request)
+    public function match(ServerRequestInterface $request)
     {
         $this->createAltoRoutes();
 
-        $altoRoute = $this->altoRouter->match($request->getRequestUri(), $request->getMethod());
+        $altoRoute = $this->altoRouter->match($request->getUri()->getPath(), $request->getMethod());
 
-        // Return a 404 if we don't find anything
-        if (!is_callable($altoRoute['target'])) {
-            return new Response('', Response::HTTP_NOT_FOUND);
+        $route = $altoRoute['target'];
+        $params = new RouteParams($altoRoute['params'] ?? []);
+
+        if (!$route) {
+            return new TextResponse('Resource not found', 404);
         }
 
-        // Call the target with any resolved params
-        $params = new RouteParams($altoRoute['params']);
-        $returnValue = call_user_func($altoRoute['target'], $params);
+        return $this->handle($route, $request, $params);
+    }
 
-        // Ensure that we return an instance of a Response object
-        if (!($returnValue instanceof Response)) {
-            $returnValue = new Response(
-                $returnValue,
-                Response::HTTP_OK,
-                ['content-type' => 'text/html']
-            );
+    protected function handle($route, $request, $params)
+    {
+        if (count($this->baseMiddleware) === 0) {
+            return $route->handle($request, $params);
         }
 
-        return $returnValue;
+        // Apply all the base middleware and trigger the route handler as the last in the chain
+        $middlewares = array_merge($this->baseMiddleware, [
+            function ($request) use ($route, $params) {
+                return $route->handle($request, $params);
+            },
+        ]);
+
+        // Create and process the dispatcher
+        $dispatcher = new Dispatcher($middlewares);
+        return $dispatcher->dispatch($request);
     }
 
     public function has(string $name)
@@ -139,12 +166,17 @@ class Router implements Routable
         }
     }
 
-    public function group($prefix, $callback) : Router
+    public function group($params, $callback) : Router
     {
-        $group = new RouteGroup($prefix, $this);
+        $group = new RouteGroup($params, $this);
 
         call_user_func($callback, $group);
 
         return $this;
+    }
+
+    public function setBaseMiddleware(array $middleware)
+    {
+        $this->baseMiddleware = $middleware;
     }
 }

@@ -2,10 +2,16 @@
 
 namespace Rareloop\Router;
 
+use Psr\Http\Message\ResponseInterface;
 use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
+use Rareloop\Router\Invoker;
+use Zend\Diactoros\Response\EmptyResponse;
+use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\ServerRequest;
+use mindplay\middleman\Dispatcher;
 
 class Route
 {
@@ -13,9 +19,13 @@ class Route
     private $methods = [];
     private $action;
     private $name;
+    private $invoker = null;
+    private $middleware = [];
 
-    public function __construct(array $methods, string $uri, $action)
+    public function __construct(array $methods, string $uri, $action, Invoker $invoker = null)
     {
+        $this->invoker = $invoker;
+
         $this->methods = $methods;
         $this->setUri($uri);
         $this->setAction($action);
@@ -36,12 +46,16 @@ class Route
         $this->action = $action;
     }
 
-    private static function convertClassStringToClosure($string)
+    private function convertClassStringToClosure($string)
     {
         @list($className, $method) = explode('@', $string);
 
         if (!isset($className) || !isset($method)) {
             throw new RouteClassStringParseException('Could not parse route controller from string: `' . $string . '`');
+        }
+
+        if (isset($this->invoker)) {
+            return [$className, $method];
         }
 
         if (!class_exists($className)) {
@@ -58,6 +72,38 @@ class Route
         };
     }
 
+    private function isUsingContainer()
+    {
+        return isset($this->invoker);
+    }
+
+    public function handle(ServerRequest $request, RouteParams $params) : ResponseInterface
+    {
+        // Get all the middleware registered for this route
+        $middlewares = $this->gatherMiddleware();
+
+        // Add our route handler as the last item
+        $middlewares[] = function ($request) use ($params) {
+            if ($this->isUsingContainer()) {
+                $output = $this->invoker->setRequest($request)->call($this->action, $params->toArray());
+            } else {
+                // Call the target with any resolved params
+                $output = call_user_func($this->action, $params);
+            }
+
+            return ResponseFactory::create($output);
+        };
+
+        // Create and process the dispatcher
+        $dispatcher = new Dispatcher($middlewares);
+        return $dispatcher->dispatch($request);
+    }
+
+    private function gatherMiddleware(): array
+    {
+        return array_merge([], $this->middleware);
+    }
+
     public function getUri()
     {
         return $this->uri;
@@ -68,11 +114,6 @@ class Route
         return $this->methods;
     }
 
-    public function getAction()
-    {
-        return $this->action;
-    }
-
     public function name(string $name)
     {
         if (isset($this->name)) {
@@ -80,6 +121,21 @@ class Route
         }
 
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function middleware()
+    {
+        $args = func_get_args();
+
+        foreach ($args as $middleware) {
+            if (is_array($middleware)) {
+                $this->middleware += $middleware;
+            } else {
+                $this->middleware[] = $middleware;
+            }
+        }
 
         return $this;
     }
