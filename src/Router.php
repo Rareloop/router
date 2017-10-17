@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
+use Rareloop\Router\Exceptions\UnknownMiddlewareAliasException;
 use Rareloop\Router\Helpers\Formatting;
 use Rareloop\Router\Invoker;
 use Rareloop\Router\Routable;
@@ -29,12 +30,15 @@ class Router implements Routable
     private $container = null;
     private $invoker = null;
     private $baseMiddleware = [];
+    private $middlewareAliasStore;
 
     public function __construct(ContainerInterface $container = null)
     {
         if (isset($container)) {
             $this->setContainer($container);
         }
+
+        $this->middlewareAliasStore = new MiddlewareAliasStore();
 
         $this->setBasePath('/');
     }
@@ -75,7 +79,7 @@ class Router implements Routable
         // Force all verbs to be uppercase
         $verbs = array_map('strtoupper', $verbs);
 
-        $route = new Route($verbs, $uri, $callback, $this->invoker);
+        $route = new Route($verbs, $uri, $callback, $this->invoker, $this->middlewareAliasStore);
 
         $this->addRoute($route);
 
@@ -134,8 +138,16 @@ class Router implements Routable
             return $route->handle($request, $params);
         }
 
+        $resolvedMiddleware = array_map(function ($item) {
+            try {
+                return $this->middlewareAliasStore->resolve($item);
+            } catch (UnknownMiddlewareAliasException $e) {
+                return $item;
+            }
+        }, $this->baseMiddleware);
+
         // Apply all the base middleware and trigger the route handler as the last in the chain
-        $middlewares = array_merge($this->baseMiddleware, [
+        $middlewares = array_merge($resolvedMiddleware, [
             function ($request) use ($route, $params) {
                 return $route->handle($request, $params);
             },
@@ -178,5 +190,15 @@ class Router implements Routable
     public function setBaseMiddleware(array $middleware)
     {
         $this->baseMiddleware = $middleware;
+    }
+
+    public function registerMiddlewareAlias($key, $class)
+    {
+        $this->middlewareAliasStore->register($key, $class);
+    }
+
+    public function resolveMiddlewareFromAlias($alias)
+    {
+        return $this->middlewareAliasStore->resolve($alias);
     }
 }

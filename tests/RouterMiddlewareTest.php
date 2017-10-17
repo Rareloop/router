@@ -2,13 +2,17 @@
 
 namespace Rareloop\Router\Test;
 
+use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\Middleware\MiddlewareInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
+use Rareloop\Router\Test\Middleware\SimpleMiddleware;
 use Zend\Diactoros\ServerRequest;
 
 class RouterMiddlewareTest extends TestCase
@@ -199,5 +203,55 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc123', $response2->getBody()->getContents());
         $this->assertTrue($response2->hasHeader('X-Key'));
         $this->assertSame('abc', $response2->getHeader('X-Key')[0]);
+    }
+
+    /** @test */
+    public function can_register_an_alias_for_middleware_for_use_on_a_route()
+    {
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router;
+
+        $router->registerMiddlewareAlias('testalias', SimpleMiddleware::class);
+        $router->get('/test/123', function () {})->middleware('testalias');
+
+        $response = $router->match($request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertTrue($response->hasHeader('X-Test-Header'));
+        $this->assertSame('testing123', $response->getHeader('X-Test-Header')[0]);
+    }
+
+    /** @test */
+    public function can_add_base_middleware_as_alias_to_be_applied_to_all_routes()
+    {
+        $router = new Router;
+        $router->registerMiddlewareAlias('simple', SimpleMiddleware::class);
+        $router->setBaseMiddleware(['simple']);
+        $count = 0;
+
+        $router->get('one', function () use (&$count) {
+            $count++;
+            return 'abc123';
+        });
+
+        $router->get('two', function () use (&$count) {
+            $count++;
+            return 'abc123';
+        });
+
+        $response1 = $router->match(new ServerRequest([], [], '/one', 'GET'));
+        $response2 = $router->match(new ServerRequest([], [], '/two', 'GET'));
+
+        $this->assertSame(2, $count);
+
+        $this->assertSame(200, $response1->getStatusCode());
+        $this->assertSame('abc123', $response1->getBody()->getContents());
+        $this->assertTrue($response1->hasHeader('X-Test-Header'));
+        $this->assertSame('testing123', $response1->getHeader('X-Test-Header')[0]);
+
+        $this->assertSame(200, $response2->getStatusCode());
+        $this->assertSame('abc123', $response2->getBody()->getContents());
+        $this->assertTrue($response2->hasHeader('X-Test-Header'));
+        $this->assertSame('testing123', $response2->getHeader('X-Test-Header')[0]);
     }
 }

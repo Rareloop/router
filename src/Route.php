@@ -7,6 +7,7 @@ use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
+use Rareloop\Router\Exceptions\UnknownMiddlewareAliasException;
 use Rareloop\Router\Invoker;
 use Zend\Diactoros\Response\EmptyResponse;
 use Zend\Diactoros\Response\HtmlResponse;
@@ -21,10 +22,12 @@ class Route
     private $name;
     private $invoker = null;
     private $middleware = [];
+    private $middlewareAliasStore;
 
-    public function __construct(array $methods, string $uri, $action, Invoker $invoker = null)
+    public function __construct(array $methods, string $uri, $action, Invoker $invoker = null, MiddlewareAliasStore $aliasStore)
     {
         $this->invoker = $invoker;
+        $this->middlewareAliasStore = $aliasStore;
 
         $this->methods = $methods;
         $this->setUri($uri);
@@ -101,7 +104,13 @@ class Route
 
     private function gatherMiddleware(): array
     {
-        return array_merge([], $this->middleware);
+        return array_map(function ($item) {
+            try {
+                return $this->middlewareAliasStore->resolve($item);
+            } catch (UnknownMiddlewareAliasException $e) {
+                return $item;
+            }
+        }, array_merge([], $this->middleware));
     }
 
     public function getUri()
