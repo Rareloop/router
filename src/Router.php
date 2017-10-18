@@ -196,9 +196,4 @@ class Router implements Routable
     {
         $this->middlewareAliasStore->register($key, $class);
     }
-
-    public function resolveMiddlewareFromAlias($alias)
-    {
-        return $this->middlewareAliasStore->resolve($alias);
-    }
 }
