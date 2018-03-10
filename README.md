@@ -186,6 +186,23 @@ If you return an instance of `Response` from your closure it will be sent back u
 #### 404
 If no route matches the request, a `Response` object will be returned with it's status code set to `404`;
 
+#### Accessing current route
+The currently matched `Route` can be retrieved by calling:
+
+```php
+$route = $router->currentRoute();
+```
+
+If no route matches or `match()` has not been called, `null` will be returned.
+
+You can also access the name of the currently matched `Route` by calling:
+
+```php
+$name = $router->currentRouteName();
+```
+
+If no route matches or `match()` has not been called or the matched route has no name, `null` will be returned.
+
 ### Using with a Dependency Injection Container
 The router can also be used with a PSR-11 compatible Container of your choosing. This allows you to type hint dependencies in your route closures or Controller methods.
 

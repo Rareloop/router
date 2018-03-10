@@ -730,4 +730,70 @@ class RouterTest extends TestCase
         $this->assertTrue($response->hasHeader('X-key'));
         $this->assertSame('value', $response->getHeader('X-key')[0]);
     }
+
+    /** @test */
+    public function can_get_currently_matched_route()
+    {
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        });
+
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame($route, $router->currentRoute());
+    }
+
+    /** @test */
+    public function can_get_currently_matched_route_name()
+    {
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123', function () use (&$count) {
+            $count++;
+
+            return 'abc123';
+        })->name('test123');
+
+        $response = $router->match($request);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('test123', $router->currentRouteName());
+    }
+
+    /** @test */
+    public function current_route_name_returns_null_when_match_not_yet_called()
+    {
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/test/123', function () {
+            return 'abc123';
+        })->name('test123');
+
+        $this->assertSame(null, $router->currentRouteName());
+    }
+
+    /** @test */
+    public function current_route_name_returns_null_when_matched_route_has_no_name()
+    {
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/test/123', function () {
+            return 'abc123';
+        });
+
+        $response = $router->match($request);
+
+        $this->assertSame(null, $router->currentRouteName());
+    }
 }

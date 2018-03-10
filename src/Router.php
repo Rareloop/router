@@ -25,6 +25,7 @@ class Router implements Routable
     private $altoRouter;
     private $altoRoutesCreated = false;
     private $basePath;
+    private $currentRoute;
 
     private $container = null;
     private $invoker = null;
@@ -125,6 +126,8 @@ class Router implements Routable
             return new TextResponse('Resource not found', 404);
         }
 
+        $this->currentRoute = $route;
+
         return $this->handle($route, $request, $params);
     }
 
@@ -178,5 +181,15 @@ class Router implements Routable
     public function setBaseMiddleware(array $middleware)
     {
         $this->baseMiddleware = $middleware;
+    }
+
+    public function currentRoute()
+    {
+        return $this->currentRoute;
+    }
+
+    public function currentRouteName()
+    {
+        return $this->currentRoute ? $this->currentRoute->getName() : null;
     }
 }
