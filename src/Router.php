@@ -5,6 +5,7 @@ namespace Rareloop\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
+use Rareloop\Router\Exceptions\RouteParamFailedConstraintException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
 use Rareloop\Router\Invoker;
@@ -185,6 +186,30 @@ class Router implements Routable
     public function url(string $name, $params = [])
     {
         $this->createAltoRoutes();
+
+        // Find the correct route by name so that we can check if the passed in parameters match any
+        // constraints that might have been applied
+        $matchedRoute = null;
+
+        foreach ($this->routes as $route) {
+            if ($route->getName() === $name) {
+                $matchedRoute = $route;
+            }
+        }
+
+        if ($matchedRoute) {
+            $paramConstraints = $matchedRoute->getParamConstraints();
+
+            foreach ($params as $key => $value) {
+                $regex = $paramConstraints[$key] ?? false;
+
+                if ($regex) {
+                    if (!preg_match('/' . $regex . '/', $value)) {
+                        throw new RouteParamFailedConstraintException('Value `' . $value . '` for param `' . $key . '` fails constraint `' . $regex . '`');
+                    }
+                }
+            }
+        }
 
         try {
             return $this->altoRouter->generate($name, $params);

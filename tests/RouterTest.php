@@ -9,6 +9,7 @@ use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
+use Rareloop\Router\Exceptions\RouteParamFailedConstraintException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
@@ -460,6 +461,20 @@ class RouterTest extends TestCase
         $route = $router->get('/posts/{id}/comments', function () {})->name('test.name');
 
         $this->assertSame('/posts/123/comments/', $router->url('test.name', ['id' => 123]));
+    }
+
+    /** @test */
+    public function url_throws_exception_when_provided_params_fail_the_regex_constraints()
+    {
+        $this->expectException(RouteParamFailedConstraintException::class);
+
+        $router = new Router;
+
+        $route = $router->get('/posts/{id}/comments', function () {})
+            ->name('test.name')
+            ->where('id', '[a-z]+');
+
+        $router->url('test.name', ['id' => 123]);
     }
 
     /** @test */
