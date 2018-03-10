@@ -2,6 +2,7 @@
 
 namespace Rareloop\Router\Test;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
 use Rareloop\Router\Route;
@@ -35,5 +36,31 @@ class RouteTest extends TestCase
         $router = new Router;
 
         $route = $router->get('test/123', function () {})->name('test1')->name('test2');
+    }
+
+    /** @test */
+    public function where_function_is_chainable()
+    {
+        $router = new Router;
+
+        $this->assertInstanceOf(Route::class, $router->get('test/{id}', function () {})->where('id', '[0-9]+'));
+    }
+
+    /** @test */
+    public function where_function_is_chainable_when_passed_an_array()
+    {
+        $router = new Router;
+
+        $this->assertInstanceOf(Route::class, $router->get('test/{id}', function () {})->where(['id' => '[0-9]+']));
+    }
+
+    /** @test */
+    public function where_function_throws_exception_when_no_params_provided()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $router = new Router;
+
+        $this->assertInstanceOf(Route::class, $router->get('test/{id}', function () {})->where());
     }
 }

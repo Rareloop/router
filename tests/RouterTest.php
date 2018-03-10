@@ -372,6 +372,77 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function can_add_regex_constraints_on_params_as_key_value()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments', function () use (&$count) {
+            $count++;
+        })->where('postId', '[0-9]+');
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
+    public function can_add_multiple_regex_constraints_on_params_as_key_value()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function () use (&$count) {
+            $count++;
+        })->where('postId', '[0-9]+')->where('commentId', '[a-z]+');
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
+    public function can_add_regex_constraints_on_params_as_array()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments', function () use (&$count) {
+            $count++;
+        })->where(['postId' => '[0-9]+']);
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
+    public function can_add_multiple_regex_constraints_on_params_as_array()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function () use (&$count) {
+            $count++;
+        })->where([
+            'postId' => '[0-9]+',
+            'commentId' => '[a-z]+',
+        ]);
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
     public function can_generate_canonical_uri_with_trailing_slash_for_named_route()
     {
         $router = new Router;

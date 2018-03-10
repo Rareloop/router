@@ -24,6 +24,7 @@ class Router implements Routable
     private $routes = [];
     private $altoRouter;
     private $altoRoutesCreated = false;
+    private $altoRouterMatchTypeId = 1;
     private $basePath;
     private $currentRoute;
 
@@ -66,9 +67,32 @@ class Router implements Routable
         $this->routes[] = $route;
     }
 
-    private function convertUriForAltoRouter(string $uri): string
+    private function convertRouteToAltoRouterUri(Route $route, AltoRouter $altoRouter): string
     {
-        return ltrim(preg_replace('/{\s*([a-zA-Z0-9]+)\s*}/s', '[:$1]', $uri), ' /');
+        $output = $route->getUri();
+
+        preg_match_all('/{\s*([a-zA-Z0-9]+)\s*}/s', $route->getUri(), $matches);
+
+        $paramConstraints = $route->getParamConstraints();
+
+        for ($i = 0; $i < count($matches[0]); $i++) {
+            $match = $matches[0][$i];
+            $paramKey = $matches[1][$i];
+            $regex = $paramConstraints[$paramKey] ?? null;
+            $matchTypeId = '';
+
+            if (!empty($regex)) {
+                $matchTypeId = 'rare' . $this->altoRouterMatchTypeId++;
+                $altoRouter->addMatchTypes([
+                    $matchTypeId => $regex,
+                ]);
+            }
+
+            $replacement = '[' . $matchTypeId . ':' . $paramKey . ']';
+            $output = str_replace($match, $replacement, $output);
+        }
+
+        return ltrim($output, ' /');
     }
 
     public function map(array $verbs, string $uri, $callback): Route
@@ -94,7 +118,7 @@ class Router implements Routable
         $this->altoRoutesCreated = true;
 
         foreach ($this->routes as $route) {
-            $uri = $this->convertUriForAltoRouter($route->getUri());
+            $uri = $this->convertRouteToAltoRouterUri($route, $this->altoRouter);
 
             // Canonical URI with trailing slash - becomes named route if name is provided
             $this->altoRouter->map(
