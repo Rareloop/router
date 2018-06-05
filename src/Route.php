@@ -91,7 +91,7 @@ class Route
                 $output = call_user_func($this->action, $params);
             }
 
-            return ResponseFactory::create($output);
+            return ResponseFactory::create($output, $request);
         };
 
         // Create and process the dispatcher

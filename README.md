@@ -181,7 +181,25 @@ $response = $router->match($request);
 $response->send();
 ```
 
+#### Return values
 If you return an instance of `Response` from your closure it will be sent back un-touched. If however you return something else, it will be wrapped in an instance of `Response` with your return value as the content.
+
+#### Responsable objects 
+If you return an object from your closure that implements the `Responsable` interface, it's `toResponse()` object will be automatically called for you.
+
+```php
+class MyObject implements Responsable
+{
+    public function toResponse(RequestInterface $request) : ResponseInterface
+    {
+        return new TextResponse('Hello World!');
+    }
+}
+
+$router->get('test/route', function () {
+    return new MyObject();
+});
+```
 
 #### 404
 If no route matches the request, a `Response` object will be returned with it's status code set to `404`;
