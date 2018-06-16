@@ -67,6 +67,19 @@ $router->map(['GET'], 'posts/{id}/comments/{commentKey}', function(RouteParams $
 ]);
 ```
 
+#### Optional route Parameters
+Sometimes your route parameters needs to be optional, in this case you can add a `?` after the parameter name:
+
+```php
+$router->map(['GET'], 'posts/{id?}', function(RouteParams $params) {
+    if (isset($params->id)) {
+        // Param provided
+    } else {
+        // Param not provided
+    }
+});
+```
+
 
 #### Named Routes
 Routes can be named so that their URL can be generated programatically:

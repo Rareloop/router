@@ -72,13 +72,17 @@ class Router implements Routable
     {
         $output = $route->getUri();
 
-        preg_match_all('/{\s*([a-zA-Z0-9]+)\s*}/s', $route->getUri(), $matches);
+        preg_match_all('/{\s*([a-zA-Z0-9]+\??)\s*}/s', $route->getUri(), $matches);
 
         $paramConstraints = $route->getParamConstraints();
 
         for ($i = 0; $i < count($matches[0]); $i++) {
             $match = $matches[0][$i];
             $paramKey = $matches[1][$i];
+
+            $optional = substr($paramKey, -1) === '?';
+            $paramKey = trim($paramKey, '?');
+
             $regex = $paramConstraints[$paramKey] ?? null;
             $matchTypeId = '';
 
@@ -90,6 +94,11 @@ class Router implements Routable
             }
 
             $replacement = '[' . $matchTypeId . ':' . $paramKey . ']';
+
+            if ($optional) {
+                $replacement .= '?';
+            }
+
             $output = str_replace($match, $replacement, $output);
         }
 

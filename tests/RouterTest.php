@@ -444,6 +444,27 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function can_provide_optional_params()
+    {
+        $matchingRequest1 = new ServerRequest([], [], '/posts/123', 'GET');
+        $matchingRequest2 = new ServerRequest([], [], '/posts', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
+        $router = new Router;
+
+        $count = 0;
+
+        $route = $router->get('/posts/{postId?}', function ($postId) use (&$count) {
+            $count++;
+        });
+
+        $router->match($matchingRequest1);
+        $router->match($matchingRequest2);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(2, $count);
+    }
+
+    /** @test */
     public function can_generate_canonical_uri_with_trailing_slash_for_named_route()
     {
         $router = new Router;
