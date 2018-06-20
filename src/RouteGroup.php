@@ -39,7 +39,7 @@ class RouteGroup implements Routable
 
     private function appendPrefixToUri(string $uri)
     {
-        return $this->prefix . '/' . $uri;
+        return $this->prefix . '/' . ltrim($uri, '/');
     }
 
     public function map(array $verbs, string $uri, $callback) : Route

@@ -35,6 +35,24 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
+    public function can_add_request_to_a_group_with_leading_slash()
+    {
+        $router = new Router;
+        $count = 0;
+
+        $router->group('test', function ($group) use (&$count) {
+            $count++;
+            $route = $group->get('/all', function () {});
+
+            $this->assertInstanceOf(Route::class, $route);
+            $this->assertSame(['GET'], $route->getMethods());
+            $this->assertSame('test/all', $route->getUri());
+        });
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
     public function can_add_post_request_to_a_group()
     {
         $router = new Router;

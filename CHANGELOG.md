@@ -1,5 +1,8 @@
 # Changelog
 
+v3.0.1
+- Fix routes with a leading `/` when added to a group
+
 v3.0.0
 - Add the `Responsable` interface and auto convert to `Response`'s as part of the `match()` process.
 
