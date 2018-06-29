@@ -1,5 +1,7 @@
 # Rare Router
+[![Latest Stable Version](https://poser.pugx.org/rareloop/router/v/stable)](https://packagist.org/packages/rareloop/router)
 ![CI](https://travis-ci.org/Rareloop/router.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Rareloop/router/badge.svg)](https://coveralls.io/github/Rareloop/router)
 
 A simple PHP router built on [AltoRouter](https://github.com/dannyvankooten/AltoRouter) but inspired by the [Laravel](https://laravel.com/docs/5.4/routing) API.
 
