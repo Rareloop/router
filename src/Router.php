@@ -5,6 +5,7 @@ namespace Rareloop\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
+use Rareloop\Router\Exceptions\RouteParamFailedConstraintException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
 use Rareloop\Router\Invoker;
@@ -24,6 +25,7 @@ class Router implements Routable
     private $routes = [];
     private $altoRouter;
     private $altoRoutesCreated = false;
+    private $altoRouterMatchTypeId = 1;
     private $basePath;
     private $currentRoute;
 
@@ -66,9 +68,41 @@ class Router implements Routable
         $this->routes[] = $route;
     }
 
-    private function convertUriForAltoRouter(string $uri): string
+    private function convertRouteToAltoRouterUri(Route $route, AltoRouter $altoRouter): string
     {
-        return ltrim(preg_replace('/{\s*([a-zA-Z0-9]+)\s*}/s', '[:$1]', $uri), ' /');
+        $output = $route->getUri();
+
+        preg_match_all('/{\s*([a-zA-Z0-9]+\??)\s*}/s', $route->getUri(), $matches);
+
+        $paramConstraints = $route->getParamConstraints();
+
+        for ($i = 0; $i < count($matches[0]); $i++) {
+            $match = $matches[0][$i];
+            $paramKey = $matches[1][$i];
+
+            $optional = substr($paramKey, -1) === '?';
+            $paramKey = trim($paramKey, '?');
+
+            $regex = $paramConstraints[$paramKey] ?? null;
+            $matchTypeId = '';
+
+            if (!empty($regex)) {
+                $matchTypeId = 'rare' . $this->altoRouterMatchTypeId++;
+                $altoRouter->addMatchTypes([
+                    $matchTypeId => $regex,
+                ]);
+            }
+
+            $replacement = '[' . $matchTypeId . ':' . $paramKey . ']';
+
+            if ($optional) {
+                $replacement .= '?';
+            }
+
+            $output = str_replace($match, $replacement, $output);
+        }
+
+        return ltrim($output, ' /');
     }
 
     public function map(array $verbs, string $uri, $callback): Route
@@ -94,7 +128,7 @@ class Router implements Routable
         $this->altoRoutesCreated = true;
 
         foreach ($this->routes as $route) {
-            $uri = $this->convertUriForAltoRouter($route->getUri());
+            $uri = $this->convertRouteToAltoRouterUri($route, $this->altoRouter);
 
             // Canonical URI with trailing slash - becomes named route if name is provided
             $this->altoRouter->map(
@@ -161,6 +195,30 @@ class Router implements Routable
     public function url(string $name, $params = [])
     {
         $this->createAltoRoutes();
+
+        // Find the correct route by name so that we can check if the passed in parameters match any
+        // constraints that might have been applied
+        $matchedRoute = null;
+
+        foreach ($this->routes as $route) {
+            if ($route->getName() === $name) {
+                $matchedRoute = $route;
+            }
+        }
+
+        if ($matchedRoute) {
+            $paramConstraints = $matchedRoute->getParamConstraints();
+
+            foreach ($params as $key => $value) {
+                $regex = $paramConstraints[$key] ?? false;
+
+                if ($regex) {
+                    if (!preg_match('/' . $regex . '/', $value)) {
+                        throw new RouteParamFailedConstraintException('Value `' . $value . '` for param `' . $key . '` fails constraint `' . $regex . '`');
+                    }
+                }
+            }
+        }
 
         try {
             return $this->altoRouter->generate($name, $params);

@@ -9,6 +9,7 @@ use Rareloop\Router\Exceptions\NamedRouteNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
+use Rareloop\Router\Exceptions\RouteParamFailedConstraintException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
@@ -372,6 +373,98 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function can_add_regex_constraints_on_params_as_key_value()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments', function () use (&$count) {
+            $count++;
+        })->where('postId', '[0-9]+');
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
+    public function can_add_multiple_regex_constraints_on_params_as_key_value()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function () use (&$count) {
+            $count++;
+        })->where('postId', '[0-9]+')->where('commentId', '[a-z]+');
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
+    public function can_add_regex_constraints_on_params_as_array()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments', function () use (&$count) {
+            $count++;
+        })->where(['postId' => '[0-9]+']);
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
+    public function can_add_multiple_regex_constraints_on_params_as_array()
+    {
+        $matchingRequest = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function () use (&$count) {
+            $count++;
+        })->where([
+            'postId' => '[0-9]+',
+            'commentId' => '[a-z]+',
+        ]);
+
+        $router->match($matchingRequest);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
+    public function can_provide_optional_params()
+    {
+        $matchingRequest1 = new ServerRequest([], [], '/posts/123', 'GET');
+        $matchingRequest2 = new ServerRequest([], [], '/posts', 'GET');
+        $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
+        $router = new Router;
+
+        $count = 0;
+
+        $route = $router->get('/posts/{postId?}', function ($postId) use (&$count) {
+            $count++;
+        });
+
+        $router->match($matchingRequest1);
+        $router->match($matchingRequest2);
+        $router->match($nonMatchingRequest);
+
+        $this->assertSame(2, $count);
+    }
+
+    /** @test */
     public function can_generate_canonical_uri_with_trailing_slash_for_named_route()
     {
         $router = new Router;
@@ -389,6 +482,20 @@ class RouterTest extends TestCase
         $route = $router->get('/posts/{id}/comments', function () {})->name('test.name');
 
         $this->assertSame('/posts/123/comments/', $router->url('test.name', ['id' => 123]));
+    }
+
+    /** @test */
+    public function url_throws_exception_when_provided_params_fail_the_regex_constraints()
+    {
+        $this->expectException(RouteParamFailedConstraintException::class);
+
+        $router = new Router;
+
+        $route = $router->get('/posts/{id}/comments', function () {})
+            ->name('test.name')
+            ->where('id', '[a-z]+');
+
+        $router->url('test.name', ['id' => 123]);
     }
 
     /** @test */
