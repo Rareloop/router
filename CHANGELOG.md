@@ -1,5 +1,9 @@
 # Changelog
 
+v3.2.0
+- Add `getRoutes()` method to Router
+- Add `getActionName()` method to Route
+
 v3.1.0
 - Add support for optional route parameters
 - Add ability to apply a regex constraint on route parameters
