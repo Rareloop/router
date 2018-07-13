@@ -1,5 +1,8 @@
 # Changelog
 
+v3.2.1
+- Fix `getActionName()` output
+
 v3.2.0
 - Add `getRoutes()` method to Router
 - Add `getActionName()` method to Route

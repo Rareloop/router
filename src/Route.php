@@ -183,14 +183,18 @@ class Route
     {
         $callableName = null;
 
-        if (isset($this->controllerName)) {
-            return $this->controllerName;
+        if (isset($this->controllerName) && isset($this->controllerMethod)) {
+            return $this->controllerName . '@' . $this->controllerMethod;
         }
 
         if (is_callable($this->action, false, $callableName)) {
             list($controller, $method) = explode('::', $callableName);
 
-            return $controller;
+            if ($controller === 'Closure') {
+                return $controller;
+            }
+
+            return $controller . '@' . $method;
         }
     }
 }

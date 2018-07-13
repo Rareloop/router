@@ -79,7 +79,7 @@ class RouteTest extends TestCase
         $router = new Router;
         $route = $router->get('test/123', [TestCallableController::class, 'testStatic']);
 
-        $this->assertSame(TestCallableController::class, $route->getActionName());
+        $this->assertSame(TestCallableController::class.'@testStatic', $route->getActionName());
     }
 
     /** @test */
@@ -89,7 +89,7 @@ class RouteTest extends TestCase
         $controller = new TestCallableController;
         $route = $router->get('test/123', [$controller, 'test']);
 
-        $this->assertSame(TestCallableController::class, $route->getActionName());
+        $this->assertSame(TestCallableController::class.'@test', $route->getActionName());
     }
 
     /** @test */
@@ -98,7 +98,7 @@ class RouteTest extends TestCase
         $router = new Router;
         $route = $router->get('test/123', TestCallableController::class.'@test');
 
-        $this->assertSame(TestCallableController::class, $route->getActionName());
+        $this->assertSame(TestCallableController::class.'@test', $route->getActionName());
     }
 }
 
