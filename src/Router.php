@@ -250,4 +250,9 @@ class Router implements Routable
     {
         return $this->currentRoute ? $this->currentRoute->getName() : null;
     }
+
+    public function getRoutes()
+    {
+        return $this->routes;
+    }
 }

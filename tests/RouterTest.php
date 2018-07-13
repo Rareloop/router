@@ -903,4 +903,18 @@ class RouterTest extends TestCase
 
         $this->assertSame(null, $router->currentRouteName());
     }
+
+    /** @test */
+    public function can_get_list_of_registered_routes()
+    {
+        $router = new Router;
+        $route1 = $router->get('/test/123', function () {});
+        $route2 = $router->get('/test/456', function () {});
+
+        $routes = $router->getRoutes();
+
+        $this->assertCount(2, $routes);
+        $this->assertContains($route1, $routes);
+        $this->assertContains($route2, $routes);
+    }
 }
