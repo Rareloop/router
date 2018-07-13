@@ -63,4 +63,47 @@ class RouteTest extends TestCase
 
         $this->assertInstanceOf(Route::class, $router->get('test/{id}', function () {})->where());
     }
+
+    /** @test */
+    public function can_get_route_action_name_when_closure()
+    {
+        $router = new Router;
+        $route = $router->get('test/123', function () {});
+
+        $this->assertSame('Closure', $route->getActionName());
+    }
+
+    /** @test */
+    public function can_get_route_action_name_when_callable()
+    {
+        $router = new Router;
+        $route = $router->get('test/123', [TestCallableController::class, 'testStatic']);
+
+        $this->assertSame(TestCallableController::class, $route->getActionName());
+    }
+
+    /** @test */
+    public function can_get_route_action_name_when_callable_instance()
+    {
+        $router = new Router;
+        $controller = new TestCallableController;
+        $route = $router->get('test/123', [$controller, 'test']);
+
+        $this->assertSame(TestCallableController::class, $route->getActionName());
+    }
+
+    /** @test */
+    public function can_get_route_action_name_when_controller_string()
+    {
+        $router = new Router;
+        $route = $router->get('test/123', TestCallableController::class.'@test');
+
+        $this->assertSame(TestCallableController::class, $route->getActionName());
+    }
+}
+
+class TestCallableController
+{
+    public static function testStatic() {}
+    public  function test() {}
 }

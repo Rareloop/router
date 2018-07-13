@@ -23,6 +23,8 @@ class Route
     private $invoker = null;
     private $middleware = [];
     private $paramConstraints = [];
+    private $controllerName = null;
+    private $controllerMethod = null;
 
     public function __construct(array $methods, string $uri, $action, Invoker $invoker = null)
     {
@@ -50,6 +52,9 @@ class Route
 
     private function convertClassStringToClosure($string)
     {
+        $this->controllerName = null;
+        $this->controllerMethod = null;
+
         @list($className, $method) = explode('@', $string);
 
         if (!isset($className) || !isset($method)) {
@@ -67,6 +72,9 @@ class Route
         if (!method_exists($className, $method)) {
             throw new RouteClassStringMethodNotFoundException('Route controller class: `' . $className . '` does not have a `' . $method . '` method');
         }
+
+        $this->controllerName = $className;
+        $this->controllerMethod = $method;
 
         return function ($params = null) use ($className, $method) {
             $controller = new $className;
@@ -169,5 +177,20 @@ class Route
     public function getName()
     {
         return $this->name;
+    }
+
+    public function getActionName()
+    {
+        $callableName = null;
+
+        if (isset($this->controllerName)) {
+            return $this->controllerName;
+        }
+
+        if (is_callable($this->action, false, $callableName)) {
+            list($controller, $method) = explode('::', $callableName);
+
+            return $controller;
+        }
     }
 }
