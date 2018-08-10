@@ -2,9 +2,10 @@
 
 namespace Rareloop\Router\Test\Middleware;
 
-use Interop\Http\Middleware\DelegateInterface;
-use Interop\Http\Middleware\MiddlewareInterface;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Zend\Diactoros\ServerRequest;
 
 class AddHeaderMiddleware implements MiddlewareInterface
@@ -18,9 +19,9 @@ class AddHeaderMiddleware implements MiddlewareInterface
         $this->value = $value;
     }
 
-    public function process(RequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
-        $response = $delegate->process($request);
+        $response = $handler->handle($request);
 
         return $response->withHeader($this->key, $this->value);
     }
