@@ -155,10 +155,9 @@ class RouterDITest extends TestCase
     public function route_params_are_injected_into_controller_class()
     {
         $container = ContainerBuilder::buildDevContainer();
-        $container->set('TestController', \DI\object(TestController::class));
         $router = new Router($container);
 
-        $router->get('/posts/{postId}/comments/{commentId}', 'TestController@expectsInjectedParams');
+        $router->get('/posts/{postId}/comments/{commentId}', 'Rareloop\Router\Test\Controllers\TestController@expectsInjectedParams');
 
         $request = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
@@ -173,11 +172,10 @@ class RouterDITest extends TestCase
         $container = ContainerBuilder::buildDevContainer();
         $testServiceInstance = new TestService('abc123');
         $container->set(TestService::class, $testServiceInstance);
-        $container->set('TestController', \DI\object(TestController::class));
 
         $router = new Router($container);
 
-        $router->get('/test/route', 'TestController@typeHintTestService');
+        $router->get('/test/route', 'Rareloop\Router\Test\Controllers\TestController@typeHintTestService');
 
         $request = new ServerRequest([], [], '/test/route', 'GET');
         $response = $router->match($request);
@@ -192,11 +190,10 @@ class RouterDITest extends TestCase
         $container = ContainerBuilder::buildDevContainer();
         $testServiceInstance = new TestService('abc123');
         $container->set(TestService::class, $testServiceInstance);
-        $container->set('TestController', \DI\object(TestController::class));
 
         $router = new Router($container);
 
-        $router->get('/posts/{postId}/comments/{commentId}', 'TestController@typeHintTestServiceWithParams');
+        $router->get('/posts/{postId}/comments/{commentId}', 'Rareloop\Router\Test\Controllers\TestController@typeHintTestServiceWithParams');
 
         $request = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
