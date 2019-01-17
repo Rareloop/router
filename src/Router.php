@@ -14,13 +14,14 @@ use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
+use Spatie\Macroable\Macroable;
 use Zend\Diactoros\Response\TextResponse;
 use \AltoRouter;
 use mindplay\middleman\Dispatcher;
 
 class Router implements Routable
 {
-    use VerbShortcutsTrait;
+    use VerbShortcutsTrait, Macroable;
 
     private $routes = [];
     private $altoRouter;

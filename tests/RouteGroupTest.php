@@ -4,6 +4,7 @@ namespace Rareloop\Router\Test;
 
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Route;
+use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
 
 class RouteGroupTest extends TestCase
@@ -140,5 +141,42 @@ class RouteGroupTest extends TestCase
         });
 
         $this->assertSame(1, $count);
+    }
+
+    /**
+     * @test
+     */
+    public function can_extend_post_behaviour_with_macros()
+    {
+        RouteGroup::macro('testFunctionAddedByMacro', function () {
+            return 'abc123';
+        });
+
+        $queryBuilder = new RouteGroup([], new Router);
+
+        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
+        $this->assertSame('abc123', RouteGroup::testFunctionAddedByMacro());
+    }
+
+    /**
+     * @test
+     */
+    public function can_extend_post_behaviour_with_mixin()
+    {
+        RouteGroup::mixin(new RouteGroupMixin);
+
+        $queryBuilder = new RouteGroup([], new Router);
+
+        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
+    }
+}
+
+class RouteGroupMixin
+{
+    function testFunctionAddedByMixin()
+    {
+        return function() {
+            return 'abc123';
+        };
     }
 }

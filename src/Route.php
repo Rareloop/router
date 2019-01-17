@@ -9,6 +9,7 @@ use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
 use Rareloop\Router\Invoker;
+use Spatie\Macroable\Macroable;
 use Zend\Diactoros\Response\EmptyResponse;
 use Zend\Diactoros\Response\HtmlResponse;
 use Zend\Diactoros\ServerRequest;
@@ -16,6 +17,8 @@ use mindplay\middleman\Dispatcher;
 
 class Route
 {
+    use Macroable;
+
     private $uri;
     private $methods = [];
     private $action;

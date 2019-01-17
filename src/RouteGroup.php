@@ -4,10 +4,11 @@ namespace Rareloop\Router;
 
 use Rareloop\Router\Routable;
 use Rareloop\Router\VerbShortcutsTrait;
+use Spatie\Macroable\Macroable;
 
 class RouteGroup implements Routable
 {
-    use VerbShortcutsTrait;
+    use VerbShortcutsTrait, Macroable;
 
     protected $router;
     protected $prefix;

@@ -100,10 +100,47 @@ class RouteTest extends TestCase
 
         $this->assertSame(TestCallableController::class.'@test', $route->getActionName());
     }
+
+    /**
+     * @test
+     */
+    public function can_extend_post_behaviour_with_macros()
+    {
+        Route::macro('testFunctionAddedByMacro', function () {
+            return 'abc123';
+        });
+
+        $queryBuilder = new Route(['GET'], '/test/url', function () {});
+
+        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
+        $this->assertSame('abc123', Route::testFunctionAddedByMacro());
+    }
+
+    /**
+     * @test
+     */
+    public function can_extend_post_behaviour_with_mixin()
+    {
+        Route::mixin(new RouteMixin);
+
+        $queryBuilder = new Route(['GET'], '/test/url', function () {});
+
+        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
+    }
 }
 
 class TestCallableController
 {
     public static function testStatic() {}
     public  function test() {}
+}
+
+class RouteMixin
+{
+    function testFunctionAddedByMixin()
+    {
+        return function() {
+            return 'abc123';
+        };
+    }
 }
