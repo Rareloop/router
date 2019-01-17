@@ -1,5 +1,8 @@
 # Changelog
 
+v4.1.0
+- Made `Router`, `Route` & `RouteGroup` Macroable
+
 v4.0.0
 - Deprecated `http-interop/http-server-middleware` in favour of the official PSR-15 interfaces found in `psr/http-server-middleware`
 
