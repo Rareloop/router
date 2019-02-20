@@ -5,9 +5,11 @@ namespace Rareloop\Router\Test;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Rareloop\Router\ControllerMiddlewareOptions;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
+use Rareloop\Router\Test\Controllers\MiddlewareProvidingController;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
 use Zend\Diactoros\ServerRequest;
 

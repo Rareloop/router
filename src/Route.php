@@ -9,6 +9,7 @@ use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
 use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
 use Rareloop\Router\Invoker;
+use Rareloop\Router\ProvidesMiddleware;
 use Spatie\Macroable\Macroable;
 use Zend\Diactoros\Response\EmptyResponse;
 use Zend\Diactoros\Response\HtmlResponse;
@@ -21,7 +22,7 @@ class Route
 
     private $uri;
     private $methods = [];
-    private $action;
+    private $routeAction;
     private $name;
     private $invoker = null;
     private $middleware = [];
@@ -45,49 +46,7 @@ class Route
 
     private function setAction($action)
     {
-        // Check if this looks like it could be a class/method string
-        if (!is_callable($action) && is_string($action)) {
-            $action = $this->convertClassStringToClosure($action);
-        }
-
-        $this->action = $action;
-    }
-
-    private function convertClassStringToClosure($string)
-    {
-        $this->controllerName = null;
-        $this->controllerMethod = null;
-
-        @list($className, $method) = explode('@', $string);
-
-        if (!isset($className) || !isset($method)) {
-            throw new RouteClassStringParseException('Could not parse route controller from string: `' . $string . '`');
-        }
-
-        if (isset($this->invoker)) {
-            return [$className, $method];
-        }
-
-        if (!class_exists($className)) {
-            throw new RouteClassStringControllerNotFoundException('Could not find route controller class: `' . $className . '`');
-        }
-
-        if (!method_exists($className, $method)) {
-            throw new RouteClassStringMethodNotFoundException('Route controller class: `' . $className . '` does not have a `' . $method . '` method');
-        }
-
-        $this->controllerName = $className;
-        $this->controllerMethod = $method;
-
-        return function ($params = null) use ($className, $method) {
-            $controller = new $className;
-            return $controller->$method($params);
-        };
-    }
-
-    private function isUsingContainer()
-    {
-        return isset($this->invoker);
+        $this->routeAction = new RouteAction($action, $this->invoker);
     }
 
     public function handle(ServerRequest $request, RouteParams $params) : ResponseInterface
@@ -97,12 +56,7 @@ class Route
 
         // Add our route handler as the last item
         $middlewares[] = function ($request) use ($params) {
-            if ($this->isUsingContainer()) {
-                $output = $this->invoker->setRequest($request)->call($this->action, $params->toArray());
-            } else {
-                // Call the target with any resolved params
-                $output = call_user_func($this->action, $params);
-            }
+            $output = $this->routeAction->invoke($request, $params);
 
             return ResponseFactory::create($output, $request);
         };
@@ -112,9 +66,9 @@ class Route
         return $dispatcher->dispatch($request);
     }
 
-    private function gatherMiddleware(): array
+    private function gatherMiddleware() : array
     {
-        return array_merge([], $this->middleware);
+        return array_merge([], $this->middleware, $this->routeAction->getMiddleware());
     }
 
     public function getUri()
@@ -184,20 +138,6 @@ class Route
 
     public function getActionName()
     {
-        $callableName = null;
-
-        if (isset($this->controllerName) && isset($this->controllerMethod)) {
-            return $this->controllerName . '@' . $this->controllerMethod;
-        }
-
-        if (is_callable($this->action, false, $callableName)) {
-            list($controller, $method) = explode('::', $callableName);
-
-            if ($controller === 'Closure') {
-                return $controller;
-            }
-
-            return $controller . '@' . $method;
-        }
+        return $this->routeAction->getActionName();
     }
 }

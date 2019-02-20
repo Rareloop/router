@@ -215,7 +215,9 @@ class Router implements Routable
 
                 if ($regex) {
                     if (!preg_match('/' . $regex . '/', $value)) {
-                        throw new RouteParamFailedConstraintException('Value `' . $value . '` for param `' . $key . '` fails constraint `' . $regex . '`');
+                        throw new RouteParamFailedConstraintException(
+                            'Value `' . $value . '` for param `' . $key . '` fails constraint `' . $regex . '`'
+                        );
                     }
                 }
             }

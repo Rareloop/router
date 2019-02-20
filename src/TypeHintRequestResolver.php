@@ -11,7 +11,11 @@ class TypeHintRequestResolver implements ParameterResolver
 {
     private $request;
 
-    public function getParameters(ReflectionFunctionAbstract $reflection, array $providedParameters, array $resolvedParameters) {
+    public function getParameters(
+        ReflectionFunctionAbstract $reflection,
+        array $providedParameters,
+        array $resolvedParameters
+    ) {
         if (!isset($this->request)) {
             return $resolvedParameters;
         }

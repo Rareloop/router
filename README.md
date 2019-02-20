@@ -207,6 +207,52 @@ $router->group(['prefix' => 'my-prefix', 'middleware' => [$header, $auth]]), fun
 });
 ```
 
+#### Defining Middleware on Controllers
+You can also apply Middleware on a Controller class too. In order to do this your Controller must extend the `Rareloop\Router\Controller` base class.
+
+Middleware is added by calling the `middleware()` function in your Controller's `__constructor()`.
+
+```php
+use Rareloop\Router\Controller;
+
+class MyController extends Controller
+{
+    public function __construct()
+    {
+        // Add one at a time
+        $this->middleware(new AddHeaderMiddleware('X-Key1', 'abc'));
+        $this->middleware(new AuthMiddleware());
+
+        // Add multiple with one method call
+        $this->middleware([
+            new AddHeaderMiddleware('X-Key1', 'abc',
+            new AuthMiddleware(),
+        ]);
+    }
+}
+```
+
+By default all Middleware added via a Controller will affect all methods on that class. To limit what methods Middleware applies to you can use `only()` and `except()`:
+
+```php
+use Rareloop\Router\Controller;
+
+class MyController extends Controller
+{
+    public function __construct()
+    {
+        // Only apply to `send()` method
+        $this->middleware(new AddHeaderMiddleware('X-Key1', 'abc'))->only('send');
+
+        // Apply to all methods except `show()` method
+        $this->middleware(new AuthMiddleware())->except('show');
+
+        // Multiple methods can be provided in an array to both methods
+        $this->middleware(new AuthMiddleware())->except(['send', 'show']);
+    }
+}
+```
+
 ### Matching Routes to Requests
 Once you have routes defined, you can attempt to match your current request against them using the `match()` function. `match()` accepts an instance of Symfony's `Request` and returns an instance of Symfony's `Response`:
 

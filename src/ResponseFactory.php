@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @phpcs:disable PEAR.Functions.ValidDefaultValue
+ */
 namespace Rareloop\Router;
 
 use Psr\Http\Message\RequestInterface;

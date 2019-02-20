@@ -13,6 +13,7 @@ before_script:
 - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
 script:
 - vendor/bin/phpunit --coverage-clover ./tests/logs/clover.xml
+- vendor/bin/phpcs --standard=PSR2 ./src
 after_script:
 - php vendor/bin/coveralls -v
 notifications:

@@ -281,4 +281,21 @@ class RouterDITest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('abc123', $response->getBody()->getContents());
     }
+
+    /** @test */
+    public function constructor_params_are_injected_into_controller_class()
+    {
+        $container = ContainerBuilder::buildDevContainer();
+        $router = new Router($container);
+        $testServiceInstance = new TestService('abc123');
+        $container->set(TestService::class, $testServiceInstance);
+
+        $router->get('/test/url', 'Rareloop\Router\Test\Controllers\TestConstructorParamController@returnTestServiceValue');
+
+        $request = new ServerRequest([], [], '/test/url', 'GET');
+        $response = $router->match($request);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('abc123', $response->getBody()->getContents());
+    }
 }

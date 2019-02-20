@@ -1,5 +1,8 @@
 # Changelog
 
+v4.2.0
+- Add support for Middleware defined on Controllers
+
 v4.1.0
 - Made `Router`, `Route` & `RouteGroup` Macroable
 
