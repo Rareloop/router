@@ -2,10 +2,12 @@
 
 namespace Rareloop\Router\Test;
 
+use Mockery;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\ControllerMiddlewareOptions;
+use Rareloop\Router\ResolvesMiddleware;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
@@ -201,5 +203,68 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc123', $response2->getBody()->getContents());
         $this->assertTrue($response2->hasHeader('X-Key'));
         $this->assertSame('abc', $response2->getHeader('X-Key')[0]);
+    }
+
+    /** @test */
+    public function can_resolve_middleware_on_a_route_using_a_custom_resolver()
+    {
+        $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router(null, $resolver);
+
+        $router->get('/test/123', function () {})->middleware('middleware-key');
+
+        $response = $router->match($request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertTrue($response->hasHeader('X-Key'));
+        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+    }
+
+    /** @test */
+    public function can_resolve_middleware_on_a_group_using_a_custom_resolver()
+    {
+        $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router(null, $resolver);
+
+        $router->group(['middleware' => 'middleware-key'], function ($group) {
+            $group->get('/test/123', function () {});
+        });
+
+        $response = $router->match($request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertTrue($response->hasHeader('X-Key'));
+        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+    }
+
+    /** @test */
+    public function can_resolve_global_middleware_using_a_custom_resolver()
+    {
+        $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router(null, $resolver);
+        $router->setBaseMiddleware(['middleware-key']);
+
+        $router->get('/test/123', function () {});
+
+        $response = $router->match($request);
+
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertTrue($response->hasHeader('X-Key'));
+        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+    }
+
+    private function createMockMiddlewareResolverWithHeader($header, $value)
+    {
+        $middleware = new AddHeaderMiddleware($header, $value);
+        $resolver = Mockery::mock(ResolvesMiddleware::class);
+        $resolver->shouldReceive('resolve')->with('middleware-key')->andReturn($middleware);
+        $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(function ($argument) {
+            return $argument;
+        });
+
+        return $resolver;
     }
 }

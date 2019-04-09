@@ -9,6 +9,7 @@ use Rareloop\Router\Exceptions\RouteParamFailedConstraintException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
 use Rareloop\Router\Invoker;
+use Rareloop\Router\ResolvesMiddleware;
 use Rareloop\Router\Routable;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
@@ -31,13 +32,18 @@ class Router implements Routable
     private $currentRoute;
 
     private $container = null;
+    private $middlewareResolver = null;
     private $invoker = null;
     private $baseMiddleware = [];
 
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(ContainerInterface $container = null, ResolvesMiddleware $resolver = null)
     {
         if (isset($container)) {
             $this->setContainer($container);
+        }
+
+        if (isset($resolver)) {
+            $this->middlewareResolver = $resolver;
         }
 
         $this->setBasePath('/');
@@ -111,7 +117,7 @@ class Router implements Routable
         // Force all verbs to be uppercase
         $verbs = array_map('strtoupper', $verbs);
 
-        $route = new Route($verbs, $uri, $callback, $this->invoker);
+        $route = new Route($verbs, $uri, $callback, $this->invoker, $this->middlewareResolver);
 
         $this->addRoute($route);
 
@@ -180,7 +186,14 @@ class Router implements Routable
         ]);
 
         // Create and process the dispatcher
-        $dispatcher = new Dispatcher($middlewares);
+        $dispatcher = new Dispatcher($middlewares, function ($name) {
+            if (!isset($this->middlewareResolver)) {
+                return $name;
+            }
+
+            return $this->middlewareResolver->resolve($name);
+        });
+
         return $dispatcher->dispatch($request);
     }
 
