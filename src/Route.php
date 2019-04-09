@@ -31,8 +31,13 @@ class Route
     private $controllerName = null;
     private $controllerMethod = null;
 
-    public function __construct(array $methods, string $uri, $action, Invoker $invoker = null, ResolvesMiddleware $resolver = null)
-    {
+    public function __construct(
+        array $methods,
+        string $uri,
+        $action,
+        Invoker $invoker = null,
+        ResolvesMiddleware $resolver = null
+    ) {
         $this->invoker = $invoker;
         $this->middlewareResolver = $resolver;
 
