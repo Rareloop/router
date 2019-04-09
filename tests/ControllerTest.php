@@ -2,10 +2,12 @@
 
 namespace Rareloop\Router\Test;
 
+use Mockery;
 use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Controller;
 use Rareloop\Router\ControllerMiddlewareOptions;
+use Rareloop\Router\ResolvesMiddleware;
 use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\MiddlewareProvidingController;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
@@ -22,6 +24,29 @@ class ControllerTest extends TestCase
 
         $controller = new MiddlewareProvidingController;
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'));
+        $container->set(MiddlewareProvidingController::class, $controller);
+
+        $router->get(
+            '/test/123',
+            'Rareloop\Router\Test\Controllers\MiddlewareProvidingController@returnOne'
+        );
+
+        $response = $router->match($request);
+
+        $this->assertTrue($response->hasHeader('X-Header'));
+        $this->assertSame('testing123', $response->getHeader('X-Header')[0]);
+    }
+
+    /** @test */
+    public function can_resolve_middleware_on_a_controller_using_custom_resolver()
+    {
+        $container = ContainerBuilder::buildDevContainer();
+        $resolver = $this->createMockMiddlewareResolverWithHeader('X-Header', 'testing123');
+        $request = new ServerRequest([], [], '/test/123', 'GET');
+        $router = new Router($container, $resolver);
+
+        $controller = new MiddlewareProvidingController;
+        $controller->middleware('middleware-key');
         $container->set(MiddlewareProvidingController::class, $controller);
 
         $router->get(
@@ -169,5 +194,17 @@ class ControllerTest extends TestCase
                 $this->assertFalse($response->hasHeader('X-Header'), '`'.$method.'` should not have middleware applied');
             }
         }
+    }
+
+    private function createMockMiddlewareResolverWithHeader($header, $value)
+    {
+        $middleware = new AddHeaderMiddleware($header, $value);
+        $resolver = Mockery::mock(ResolvesMiddleware::class);
+        $resolver->shouldReceive('resolve')->with('middleware-key')->andReturn($middleware);
+        $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(function ($argument) {
+            return $argument;
+        });
+
+        return $resolver;
     }
 }
