@@ -2,7 +2,7 @@
 
 namespace Rareloop\Router;
 
-interface ResolvesMiddleware
+interface MiddlewareResolver
 {
     /**
      * Resolves a middleware

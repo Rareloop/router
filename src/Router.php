@@ -9,7 +9,7 @@ use Rareloop\Router\Exceptions\RouteParamFailedConstraintException;
 use Rareloop\Router\Exceptions\TooLateToAddNewRouteException;
 use Rareloop\Router\Helpers\Formatting;
 use Rareloop\Router\Invoker;
-use Rareloop\Router\ResolvesMiddleware;
+use Rareloop\Router\MiddlewareResolver;
 use Rareloop\Router\Routable;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
@@ -36,7 +36,7 @@ class Router implements Routable
     private $invoker = null;
     private $baseMiddleware = [];
 
-    public function __construct(ContainerInterface $container = null, ResolvesMiddleware $resolver = null)
+    public function __construct(ContainerInterface $container = null, MiddlewareResolver $resolver = null)
     {
         if (isset($container)) {
             $this->setContainer($container);

@@ -7,7 +7,7 @@ use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Controller;
 use Rareloop\Router\ControllerMiddlewareOptions;
-use Rareloop\Router\ResolvesMiddleware;
+use Rareloop\Router\MiddlewareResolver;
 use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\MiddlewareProvidingController;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
@@ -199,7 +199,7 @@ class ControllerTest extends TestCase
     private function createMockMiddlewareResolverWithHeader($header, $value)
     {
         $middleware = new AddHeaderMiddleware($header, $value);
-        $resolver = Mockery::mock(ResolvesMiddleware::class);
+        $resolver = Mockery::mock(MiddlewareResolver::class);
         $resolver->shouldReceive('resolve')->with('middleware-key')->andReturn($middleware);
         $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(function ($argument) {
             return $argument;

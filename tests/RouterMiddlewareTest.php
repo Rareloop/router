@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Rareloop\Router\ControllerMiddlewareOptions;
-use Rareloop\Router\ResolvesMiddleware;
+use Rareloop\Router\MiddlewareResolver;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
@@ -259,7 +259,7 @@ class RouterMiddlewareTest extends TestCase
     private function createMockMiddlewareResolverWithHeader($header, $value)
     {
         $middleware = new AddHeaderMiddleware($header, $value);
-        $resolver = Mockery::mock(ResolvesMiddleware::class);
+        $resolver = Mockery::mock(MiddlewareResolver::class);
         $resolver->shouldReceive('resolve')->with('middleware-key')->andReturn($middleware);
         $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(function ($argument) {
             return $argument;

@@ -36,7 +36,7 @@ class Route
         string $uri,
         $action,
         Invoker $invoker = null,
-        ResolvesMiddleware $resolver = null
+        MiddlewareResolver $resolver = null
     ) {
         $this->invoker = $invoker;
         $this->middlewareResolver = $resolver;
