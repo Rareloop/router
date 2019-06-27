@@ -1,6 +1,6 @@
 {
     "name": "rareloop/router",
-    "description": "Router",
+    "description": "A powerful PHP Router for PSR7 messages inspired by the Laravel API",
     "keywords": [
         "rareloop",
         "router"
