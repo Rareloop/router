@@ -1,5 +1,8 @@
 # Changelog
 
+v4.3.0
+- Add support for a custom Middleware Resolver
+
 v4.2.0
 - Add support for Middleware defined on Controllers
 
