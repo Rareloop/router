@@ -32,9 +32,9 @@ class ControllerMiddleware
     /**
      * Get the Middleware
      *
-     * @return Psr\Http\Server\MiddlewareInterface
+     * @return Psr\Http\Server\MiddlewareInterface|string
      */
-    public function middleware() : MiddlewareInterface
+    public function middleware()
     {
         return $this->middleware;
     }

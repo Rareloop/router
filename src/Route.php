@@ -25,14 +25,21 @@ class Route
     private $routeAction;
     private $name;
     private $invoker = null;
+    private $middlewareResolver = null;
     private $middleware = [];
     private $paramConstraints = [];
     private $controllerName = null;
     private $controllerMethod = null;
 
-    public function __construct(array $methods, string $uri, $action, Invoker $invoker = null)
-    {
+    public function __construct(
+        array $methods,
+        string $uri,
+        $action,
+        Invoker $invoker = null,
+        MiddlewareResolver $resolver = null
+    ) {
         $this->invoker = $invoker;
+        $this->middlewareResolver = $resolver;
 
         $this->methods = $methods;
         $this->setUri($uri);
@@ -62,7 +69,14 @@ class Route
         };
 
         // Create and process the dispatcher
-        $dispatcher = new Dispatcher($middlewares);
+        $dispatcher = new Dispatcher($middlewares, function ($name) {
+            if (!isset($this->middlewareResolver)) {
+                return $name;
+            }
+
+            return $this->middlewareResolver->resolve($name);
+        });
+
         return $dispatcher->dispatch($request);
     }
 
