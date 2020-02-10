@@ -1,5 +1,8 @@
 # Changelog
 
+v4.3.1
+- Fix errors when running PHP 7.4
+
 v4.3.0
 - Add support for a custom Middleware Resolver
 
