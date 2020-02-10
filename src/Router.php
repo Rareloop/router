@@ -160,7 +160,7 @@ class Router implements Routable
 
         $altoRoute = $this->altoRouter->match($request->getUri()->getPath(), $request->getMethod());
 
-        $route = $altoRoute['target'];
+        $route = $altoRoute['target'] ?? null;
         $params = new RouteParams($altoRoute['params'] ?? []);
 
         if (!$route) {
