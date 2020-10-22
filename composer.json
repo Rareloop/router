@@ -24,7 +24,7 @@
         "psr/http-message": "^1.0",
         "psr/http-server-middleware": "^1.0",
         "spatie/macroable": "^1.0",
-        "zendframework/zend-diactoros": "^1.4"
+        "laminas/laminas-diactoros": "^2.4"
     },
     "require-dev": {
         "php-di/php-di": "^6.0.0",

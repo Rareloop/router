@@ -1,5 +1,8 @@
 # Changelog
 
+v4.3.2
+- Switch from the deprecated `zendframework/zend-diactoros` to `laminas/laminas-diactoros`
+
 v4.3.1
 - Fix errors when running PHP 7.4
 
