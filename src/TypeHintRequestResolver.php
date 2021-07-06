@@ -2,10 +2,11 @@
 
 namespace Rareloop\Router;
 
-use Invoker\ParameterResolver\ParameterResolver;
-use Psr\Http\Message\ServerRequestInterface;
+use ReflectionClass;
 use ReflectionFunctionAbstract;
 use Zend\Diactoros\ServerRequest;
+use Psr\Http\Message\ServerRequestInterface;
+use Invoker\ParameterResolver\ParameterResolver;
 
 class TypeHintRequestResolver implements ParameterResolver
 {
@@ -27,7 +28,9 @@ class TypeHintRequestResolver implements ParameterResolver
         }
 
         foreach ($parameters as $index => $parameter) {
-            $parameterClass = $parameter->getClass();
+            $parameterClass = $parameter->getType() && !$parameter->getType()->isBuiltin()
+                ? new ReflectionClass($parameter->getType()->getName())
+                : null;
 
             if (!$parameterClass) {
                 continue;
