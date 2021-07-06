@@ -15,7 +15,7 @@ class ResponseFactoryTest extends TestCase
 {
     use \Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -63,7 +63,7 @@ class ResponseFactoryTest extends TestCase
 
 class ResponsableObject implements Responsable
 {
-    public function toResponse(RequestInterface $request) : ResponseInterface
+    public function toResponse(RequestInterface $request): ResponseInterface
     {
         return new TextResponse('testing123');
     }

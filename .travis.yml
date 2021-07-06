@@ -1,22 +1,21 @@
 language: php
 php:
-- 7.1
-- 7.2
-- 7.3
-- 7.4
+    - 7.3
+    - 7.4
+    - 8.0
 env:
-  matrix:
-  - COMPOSER_FLAGS="--prefer-lowest"
-  - COMPOSER_FLAGS=""
+    matrix:
+        - COMPOSER_FLAGS="--prefer-lowest"
+        - COMPOSER_FLAGS=""
 before_script:
-- travis_retry composer self-update
-- travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
+    - travis_retry composer self-update
+    - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
 script:
-- vendor/bin/phpunit --coverage-clover ./tests/logs/clover.xml
-- vendor/bin/phpcs --standard=PSR2 ./src
+    - vendor/bin/phpunit --coverage-clover ./tests/logs/clover.xml
+    - vendor/bin/phpcs --standard=PSR2 ./src
 after_script:
-- php vendor/bin/coveralls -v
+    - php vendor/bin/coveralls -v
 notifications:
-  slack:
-    rooms:
-      secure: WWZmxESfUhOm/Sh3/XyL9Qd7iZ55Is0I1zhPivnAaN0G8j/nnLC4ihHj5lB8JzjVne0umsbJuJq8j2rTgEs8eLy78tlGQ3Vcxb7aNlAFg+Af790uoV5i2HscMBxBbjUPREK13AzgxuintKNpVG8S++YSe6qM1mIO938CtD+U8Nfbk0JtSV7j7S3aVQVaF4pprkmNOF5Sl2JZ19DoN0EK/r8iXOhwu+udw+CGavBx3gdgRO73mxuHdcGn/EP1kAwkhIIQeas7wYzuu5H29inzQKBsM2eS6vveaUuWSKEa6pXj6YkHmWnWov1+y/Q8XLis0JJT7759b7nKNC1mUFF0PeRGwzWvzYNZ1+WmSap2rB9gSj6l5Q+DAuNY/ULE3np8uWattayjz8KOgwL9XzDtMXjajaTFwkfjLsJmFtSj7dpCOcae8+CZ2pcy2sGxEdP8iKTrLeL+pMcbHNGF3Ez/z4HqoEqIZ856Bj9qu1lvmTZRTAieiBw9aAw5wCzZzLzc+eu41bilQM8GWDHRYNyPZEBqtfNpXhg55FfRY8hIFbax9qTZOewF4cILsRJfdhPNNrnvj4B3sbJEhenSQnb+X0N6ii/iHVgfPFbPQH6EUublfM+cNy3AqEqAR8hccdaM+aFTPGlY8OiRM9Q53i2WIppxqhVA3741dUDXk+JDvFg=
+    slack:
+        rooms:
+            secure: WWZmxESfUhOm/Sh3/XyL9Qd7iZ55Is0I1zhPivnAaN0G8j/nnLC4ihHj5lB8JzjVne0umsbJuJq8j2rTgEs8eLy78tlGQ3Vcxb7aNlAFg+Af790uoV5i2HscMBxBbjUPREK13AzgxuintKNpVG8S++YSe6qM1mIO938CtD+U8Nfbk0JtSV7j7S3aVQVaF4pprkmNOF5Sl2JZ19DoN0EK/r8iXOhwu+udw+CGavBx3gdgRO73mxuHdcGn/EP1kAwkhIIQeas7wYzuu5H29inzQKBsM2eS6vveaUuWSKEa6pXj6YkHmWnWov1+y/Q8XLis0JJT7759b7nKNC1mUFF0PeRGwzWvzYNZ1+WmSap2rB9gSj6l5Q+DAuNY/ULE3np8uWattayjz8KOgwL9XzDtMXjajaTFwkfjLsJmFtSj7dpCOcae8+CZ2pcy2sGxEdP8iKTrLeL+pMcbHNGF3Ez/z4HqoEqIZ856Bj9qu1lvmTZRTAieiBw9aAw5wCzZzLzc+eu41bilQM8GWDHRYNyPZEBqtfNpXhg55FfRY8hIFbax9qTZOewF4cILsRJfdhPNNrnvj4B3sbJEhenSQnb+X0N6ii/iHVgfPFbPQH6EUublfM+cNy3AqEqAR8hccdaM+aFTPGlY8OiRM9Q53i2WIppxqhVA3741dUDXk+JDvFg=
