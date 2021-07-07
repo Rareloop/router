@@ -11,12 +11,12 @@ env:
         - XDEBUG_MODE=coverage
 before_script:
     - travis_retry composer self-update
-    - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
+    - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source --no-cache
 script:
     - vendor/bin/phpunit --coverage-clover ./tests/logs/clover.xml
     - vendor/bin/phpcs --standard=PSR2 ./src
 after_script:
-    - php vendor/bin/coveralls -v
+    - php vendor/bin/php-coveralls -v
 notifications:
     slack:
         rooms:
