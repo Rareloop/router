@@ -1,5 +1,9 @@
 # Changelog
 
+v5.0.0
+- Add support for PHP 8
+- Change function signature on `ResponseFactory::create()` so that optional parameters come after non-optional
+
 v4.4.0
 - Switch from the deprecated `zendframework/zend-diactoros` to `laminas/laminas-diactoros`
 - Increase minimum PHP version to 7.1
