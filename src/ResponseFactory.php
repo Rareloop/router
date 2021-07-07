@@ -1,7 +1,9 @@
 <?php
+
 /**
  * @phpcs:disable PEAR.Functions.ValidDefaultValue
  */
+
 namespace Rareloop\Router;
 
 use Psr\Http\Message\RequestInterface;
@@ -12,7 +14,7 @@ use Zend\Diactoros\Response\HtmlResponse;
 
 class ResponseFactory
 {
-    public static function create($response = '', RequestInterface $request)
+    public static function create(RequestInterface $request, $response = '')
     {
         if (empty($response)) {
             return new EmptyResponse();
