@@ -20,7 +20,7 @@ composer require rareloop/router
 Creating a route is done using the `map` function:
 
 ```php
-use Rareloop\Router\Route;
+use Rareloop\Router\Router;
 
 $router = new Router;
 
