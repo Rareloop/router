@@ -15,7 +15,7 @@ class ResponseFactoryTest extends TestCase
 {
     use \Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -27,13 +27,13 @@ class ResponseFactoryTest extends TestCase
     {
         $response = new TextResponse('Testing', 200);
 
-        $this->assertSame($response, ResponseFactory::create($response, $this->request));
+        $this->assertSame($response, ResponseFactory::create($this->request, $response));
     }
 
     /** @test */
     public function when_passed_a_non_response_instance_a_response_object_is_returned()
     {
-        $response = ResponseFactory::create('Testing', $this->request);
+        $response = ResponseFactory::create($this->request, 'Testing');
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertSame('Testing', $response->getBody()->getContents());
@@ -42,7 +42,7 @@ class ResponseFactoryTest extends TestCase
     /** @test */
     public function when_nothing_is_passed_an_empty_response_object_is_returned()
     {
-        $response = ResponseFactory::create(null, $this->request);
+        $response = ResponseFactory::create($this->request);
 
         $this->assertInstanceOf(EmptyResponse::class, $response);
     }
@@ -54,7 +54,7 @@ class ResponseFactoryTest extends TestCase
         $object = \Mockery::mock(ResponsableObject::class);
         $object->shouldReceive('toResponse')->with($this->request)->once()->andReturn($textResponse);
 
-        $response = ResponseFactory::create($object, $this->request);
+        $response = ResponseFactory::create($this->request, $object);
 
         $this->assertInstanceOf(TextResponse::class, $response);
         $this->assertSame('testing123', $response->getBody()->getContents());
@@ -63,7 +63,7 @@ class ResponseFactoryTest extends TestCase
 
 class ResponsableObject implements Responsable
 {
-    public function toResponse(RequestInterface $request) : ResponseInterface
+    public function toResponse(RequestInterface $request): ResponseInterface
     {
         return new TextResponse('testing123');
     }
