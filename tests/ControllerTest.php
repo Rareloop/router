@@ -11,7 +11,7 @@ use Rareloop\Router\MiddlewareResolver;
 use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\MiddlewareProvidingController;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
-use Zend\Diactoros\ServerRequest;
+use Laminas\Diactoros\ServerRequest;
 
 class ControllerTest extends TestCase
 {

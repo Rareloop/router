@@ -16,7 +16,7 @@ use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\VerbShortcutsTrait;
 use Spatie\Macroable\Macroable;
-use Zend\Diactoros\Response\TextResponse;
+use Laminas\Diactoros\Response\TextResponse;
 use \AltoRouter;
 use mindplay\middleman\Dispatcher;
 
