@@ -1,5 +1,9 @@
 # Changelog
 
+v6.0.0
+- Replace `Zend` namespace with `Laminas`
+- Upgrade to v2 of AltoRouter
+
 v5.0.0
 - Add support for PHP 8
 - Change function signature on `ResponseFactory::create()` so that optional parameters come after non-optional
