@@ -160,6 +160,21 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function mathcing_root_path_does_not_trigger_error()
+    {
+        $request = new ServerRequest([], [], '/', 'GET');
+        $router = new Router;
+        $count = 0;
+
+        $route = $router->get('/test/123', function () use (&$count) {
+            $count++;
+        });
+        $response = $router->match($request);
+
+        $this->assertSame(0, $count);
+    }
+
+    /** @test */
     public function match_returns_a_response_object()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
