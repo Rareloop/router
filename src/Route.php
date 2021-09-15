@@ -11,9 +11,9 @@ use Rareloop\Router\Exceptions\RouteNameRedefinedException;
 use Rareloop\Router\Invoker;
 use Rareloop\Router\ProvidesMiddleware;
 use Spatie\Macroable\Macroable;
-use Zend\Diactoros\Response\EmptyResponse;
-use Zend\Diactoros\Response\HtmlResponse;
-use Zend\Diactoros\ServerRequest;
+use Laminas\Diactoros\Response\EmptyResponse;
+use Laminas\Diactoros\Response\HtmlResponse;
+use Laminas\Diactoros\ServerRequest;
 use mindplay\middleman\Dispatcher;
 
 class Route

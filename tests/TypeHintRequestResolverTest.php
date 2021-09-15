@@ -4,7 +4,7 @@ namespace Rareloop\Router\Test;
 
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\TypeHintRequestResolver;
-use Zend\Diactoros\ServerRequest;
+use Laminas\Diactoros\ServerRequest;
 
 class TypeHintRequestResolverTest extends TestCase
 {

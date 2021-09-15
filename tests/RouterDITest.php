@@ -9,7 +9,7 @@ use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\TestController;
 use Rareloop\Router\Test\Requests\TestRequest;
 use Rareloop\Router\Test\Services\TestService;
-use Zend\Diactoros\ServerRequest;
+use Laminas\Diactoros\ServerRequest;
 
 class RouterDITest extends TestCase
 {

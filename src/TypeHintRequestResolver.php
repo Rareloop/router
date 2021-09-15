@@ -4,7 +4,7 @@ namespace Rareloop\Router;
 
 use ReflectionClass;
 use ReflectionFunctionAbstract;
-use Zend\Diactoros\ServerRequest;
+use Laminas\Diactoros\ServerRequest;
 use Psr\Http\Message\ServerRequestInterface;
 use Invoker\ParameterResolver\ParameterResolver;
 

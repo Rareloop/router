@@ -2,7 +2,7 @@
 
 namespace Rareloop\Router\Test\Requests;
 
-use Zend\Diactoros\ServerRequest;
+use Laminas\Diactoros\ServerRequest;
 
 class TestRequest extends ServerRequest
 {

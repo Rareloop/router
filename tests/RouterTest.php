@@ -15,9 +15,9 @@ use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\RouteParams;
 use Rareloop\Router\Router;
-use Zend\Diactoros\Response;
-use Zend\Diactoros\Response\TextResponse;
-use Zend\Diactoros\ServerRequest;
+use Laminas\Diactoros\Response;
+use Laminas\Diactoros\Response\TextResponse;
+use Laminas\Diactoros\ServerRequest;
 
 class RouterTest extends TestCase
 {
