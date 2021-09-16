@@ -160,7 +160,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function mathcing_root_path_does_not_trigger_error()
+    public function matching_root_path_does_not_trigger_error()
     {
         $request = new ServerRequest([], [], '/', 'GET');
         $router = new Router;
