@@ -16,6 +16,7 @@ jobs:
       with:
         php_version: ${{ matrix.php_version }}
         args: ${{ matrix.composer_flags }}
+        command: update
     - uses: php-actions/phpunit@v3
       with:
         version: 8
