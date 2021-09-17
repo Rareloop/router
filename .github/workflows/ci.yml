@@ -36,6 +36,7 @@ jobs:
     if: always()
 
     steps:
+    - uses: actions/checkout@v2
     - uses: actions/download-artifact@v2
       with:
         name: code-coverage-report
