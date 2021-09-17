@@ -26,3 +26,7 @@ jobs:
       env:
           XDEBUG_MODE: coverage
 
+  coveralls:
+    - needs: build-test
+    - run: php vendor/bin/php-coveralls -v
+
