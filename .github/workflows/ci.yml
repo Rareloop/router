@@ -26,9 +26,9 @@ jobs:
       env:
           XDEBUG_MODE: coverage
     - uses: actions/upload-artifact@v2
-        with:
-          name: code-coverage-report
-          path: ./tests/logs/clover.xml
+      with:
+        name: code-coverage-report
+        path: ./tests/logs/clover.xml
 
   coveralls:
     needs: build-test
