@@ -23,4 +23,6 @@ jobs:
         php_version: ${{ matrix.php_version }}
         args: '--coverage-clover ./tests/logs/clover.xml'
         php_extensions: xdebug
+      env:
+          XDEBUG_MODE: coverage
 
