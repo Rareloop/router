@@ -34,12 +34,19 @@ jobs:
     needs: build-test
     runs-on: ubuntu-latest
     if: always()
+
     steps:
     - uses: actions/download-artifact@v2
       with:
         name: code-coverage-report
-    - uses: coverallsapp/github-action@master
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: clover.xml
+        php_version: 8
+        tools: composer:v2
+    - name: Submit code coverage
+      run: composer global require php-coveralls/php-coveralls
+      run: ~/.composer/vendor/bin/php-coveralls --coverage_clover=clover.xml -v
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
