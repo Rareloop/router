@@ -42,12 +42,12 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php_version: 8
+        php-version: 8
         tools: composer:v2
     - name: Submit code coverage
       run: |
         composer global require php-coveralls/php-coveralls
-        php-coveralls --coverage_clover=clover.xml -v
+        php-coveralls --coverage_clover=clover.xml --json_path=~ -v
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
