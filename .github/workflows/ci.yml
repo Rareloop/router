@@ -25,11 +25,21 @@ jobs:
         php_extensions: xdebug
       env:
           XDEBUG_MODE: coverage
+    - uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: ./tests/logs/clover.xml
 
   coveralls:
     needs: build-test
     runs-on: ubuntu-latest
     if: always()
     steps:
-    - run: php vendor/bin/php-coveralls -v
+    - uses: actions/download-artifact@v2
+        with:
+        name: code-coverage-report
+    - uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./tests/logs/clover.xml
 
