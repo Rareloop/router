@@ -25,30 +25,14 @@ jobs:
         php_extensions: xdebug
       env:
           XDEBUG_MODE: coverage
-    - uses: actions/upload-artifact@v2
-      with:
-        name: code-coverage-report
-        path: ./tests/logs/clover.xml
-
-  coveralls:
-    needs: build-test
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/download-artifact@v2
-      with:
-        name: code-coverage-report
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 8
-        tools: composer:v2
-    - name: Submit code coverage
-      run: |
-        composer global require php-coveralls/php-coveralls
-        php-coveralls --coverage_clover=clover.xml --json_path=~ --root_dir=$GITHUB_WORKSPACE -v
+    - name: Submit coverage to Coveralls
+      # We use php-coveralls library for this, as the official Coveralls GitHub Action lacks support for clover reports:
+      # https://github.com/coverallsapp/github-action/issues/15
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_PARALLEL: true
+        COVERALLS_FLAG_NAME: ${{ github.job }}-PHP-${{ matrix.php_version }} ${{ matrix.composer_flags }}
+      run: |
+        composer global require php-coveralls/php-coveralls
+        ~/.composer/vendor/bin/php-coveralls -v
 
