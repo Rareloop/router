@@ -21,4 +21,5 @@ jobs:
       with:
         version: 8
         php_version: ${{ matrix.php_version }}
+        args: '--coverage-clover ./tests/logs/clover.xml'
 
