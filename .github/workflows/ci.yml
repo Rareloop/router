@@ -1,0 +1,39 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php_version: [7.3, 7.4, 8.0]
+        composer_flags: ['', '--prefer-lowest']
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: php-actions/composer@v5
+      with:
+        php_version: ${{ matrix.php_version }}
+        args: ${{ matrix.composer_flags }}
+        command: update
+    - uses: php-actions/phpunit@v3
+      with:
+        version: 8
+        php_version: ${{ matrix.php_version }}
+        args: '--coverage-clover ./tests/logs/clover.xml'
+        php_extensions: xdebug
+      env:
+          XDEBUG_MODE: coverage
+
+    # - name: Submit coverage to Coveralls
+    #   # We use php-coveralls library for this, as the official Coveralls GitHub Action lacks support for clover reports:
+    #   # https://github.com/coverallsapp/github-action/issues/15
+    #   env:
+    #     COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     COVERALLS_PARALLEL: true
+    #     COVERALLS_FLAG_NAME: ${{ github.job }}-PHP-${{ matrix.php_version }} ${{ matrix.composer_flags }}
+    #   run: |
+    #     composer global require php-coveralls/php-coveralls
+    #     ~/.composer/vendor/bin/php-coveralls -v
+
