@@ -48,7 +48,7 @@ jobs:
     - name: Submit code coverage
       run: |
         composer global require php-coveralls/php-coveralls
-        php-coveralls --coverage_clover=clover.xml --json_path=~ -v
+        php-coveralls --coverage_clover=clover.xml --json_path=~ --root_dir=$GITHUB_WORKSPACE -v
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
