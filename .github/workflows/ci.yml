@@ -45,8 +45,9 @@ jobs:
         php_version: 8
         tools: composer:v2
     - name: Submit code coverage
-      run: composer global require php-coveralls/php-coveralls
-      run: ~/.composer/vendor/bin/php-coveralls --coverage_clover=clover.xml -v
+      run: |
+        composer global require php-coveralls/php-coveralls
+        ~/.composer/vendor/bin/php-coveralls --coverage_clover=clover.xml -v
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
