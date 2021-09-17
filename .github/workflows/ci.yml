@@ -29,6 +29,7 @@ jobs:
   coveralls:
     needs: build-test
     runs-on: ubuntu-latest
+    if: always()
     steps:
     - run: php vendor/bin/php-coveralls -v
 
