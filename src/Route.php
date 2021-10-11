@@ -4,15 +4,9 @@ namespace Rareloop\Router;
 
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
-use Rareloop\Router\Exceptions\RouteClassStringControllerNotFoundException;
-use Rareloop\Router\Exceptions\RouteClassStringMethodNotFoundException;
-use Rareloop\Router\Exceptions\RouteClassStringParseException;
 use Rareloop\Router\Exceptions\RouteNameRedefinedException;
 use Rareloop\Router\Invoker;
-use Rareloop\Router\ProvidesMiddleware;
 use Spatie\Macroable\Macroable;
-use Laminas\Diactoros\Response\EmptyResponse;
-use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\ServerRequest;
 use mindplay\middleman\Dispatcher;
 
@@ -77,7 +71,7 @@ class Route
             return $this->middlewareResolver->resolve($name);
         });
 
-        return $dispatcher->dispatch($request);
+        return $dispatcher->handle($request);
     }
 
     private function gatherMiddleware(): array

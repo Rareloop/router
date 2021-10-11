@@ -194,7 +194,7 @@ class Router implements Routable
             return $this->middlewareResolver->resolve($name);
         });
 
-        return $dispatcher->dispatch($request);
+        return $dispatcher->handle($request);
     }
 
     public function has(string $name)
