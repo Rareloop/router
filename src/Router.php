@@ -239,11 +239,11 @@ class Router implements Routable
         try {
             return $this->altoRouter->generate($name, $params);
         } catch (\Exception $e) {
-            throw new NamedRouteNotFoundException($name, null);
+            throw new NamedRouteNotFoundException($name);
         }
     }
 
-    public function group($params, $callback) : Router
+    public function group($params, $callback): Router
     {
         $group = new RouteGroup($params, $this);
 
