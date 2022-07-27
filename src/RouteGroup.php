@@ -34,7 +34,7 @@ class RouteGroup implements Routable
             $this->middleware += $middleware;
         }
 
-        $this->prefix = trim($prefix, ' /');
+        $this->prefix = is_string($prefix) ? trim($prefix, ' /') : null;
         $this->router = $router;
     }
 
@@ -43,12 +43,12 @@ class RouteGroup implements Routable
         return $this->prefix . '/' . ltrim($uri, '/');
     }
 
-    public function map(array $verbs, string $uri, $callback) : Route
+    public function map(array $verbs, string $uri, $callback): Route
     {
         return $this->router->map($verbs, $this->appendPrefixToUri($uri), $callback)->middleware($this->middleware);
     }
 
-    public function group($params, $callback) : RouteGroup
+    public function group($params, $callback): RouteGroup
     {
         if (is_string($params)) {
             $params = $this->appendPrefixToUri($params);
