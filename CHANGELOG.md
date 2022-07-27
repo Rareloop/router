@@ -1,5 +1,9 @@
 # Changelog
 
+v6.0.2
+- Add PHP 8.1 support
+- Increase minimum PHP version to 7.4
+
 v6.0.1
 - Increase minimum version of AltoRouter to `v2.0.1` to fix `Uninitialized string offset: -1` issue
 
