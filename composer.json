@@ -18,7 +18,7 @@
     "require": {
         "php": "^7.3||^8.0",
         "altorouter/altorouter": "^2.0.2",
-        "mindplay/middleman": "^3.0.3",
+        "mindplay/middleman": "^4.0",
         "php-di/invoker": "^2.3.0",
         "psr/container": "^1.0",
         "psr/http-message": "^1.0",
