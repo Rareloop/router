@@ -132,6 +132,9 @@ class Router implements Routable
 
         $this->altoRouter = new AltoRouter();
         $this->altoRouter->setBasePath($this->basePath);
+        $this->altoRouter->addMatchTypes([
+             '' => '[^/]++',
+        ]);
         $this->altoRoutesCreated = true;
 
         foreach ($this->routes as $route) {

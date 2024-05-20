@@ -385,6 +385,23 @@ class RouterTest extends TestCase
     }
 
     /** @test */
+    public function params_may_contain_full_stops()
+    {
+        $request = new ServerRequest([], [], '/posts/a.b.c', 'GET');
+        $router = new Router;
+
+        $route = $router->get('/posts/{postId}', function ($params) use (&$count) {
+            $count++;
+
+            $this->assertInstanceOf(RouteParams::class, $params);
+            $this->assertSame('a.b.c', $params->postId);
+        });
+        $router->match($request);
+
+        $this->assertSame(1, $count);
+    }
+
+    /** @test */
     public function params_are_parsed_and_passed_into_callback_function_when_surrounded_by_whitespace()
     {
         $request = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
