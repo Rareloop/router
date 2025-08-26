@@ -77,7 +77,7 @@ class Route
             return $this->middlewareResolver->resolve($name);
         });
 
-        return $dispatcher->dispatch($request);
+        return $dispatcher->handle($request);
     }
 
     private function gatherMiddleware(): array
