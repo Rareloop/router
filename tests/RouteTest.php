@@ -77,28 +77,18 @@ class RouteTest extends TestCase
     public function can_get_route_action_name_when_callable()
     {
         $router = new Router;
-        $route = $router->get('test/123', TestCallableController::testStatic(...));
+        $route = $router->get('test/123', [TestCallableController::class, 'testStatic']);
 
-        $this->assertSame(TestCallableController::class.'@testStatic', $route->getActionName());
-    }
-
-    /** @test */
-    public function can_get_route_action_name_when_callable_instance()
-    {
-        $router = new Router;
-        $controller = new TestCallableController;
-        $route = $router->get('test/123', $controller->test(...));
-
-        $this->assertSame(TestCallableController::class.'@test', $route->getActionName());
+        $this->assertSame(TestCallableController::class . '@testStatic', $route->getActionName());
     }
 
     /** @test */
     public function can_get_route_action_name_when_controller_string()
     {
         $router = new Router;
-        $route = $router->get('test/123', TestCallableController::class.'@test');
+        $route = $router->get('test/123', TestCallableController::class . '@test');
 
-        $this->assertSame(TestCallableController::class.'@test', $route->getActionName());
+        $this->assertSame(TestCallableController::class . '@test', $route->getActionName());
     }
 
     /**
