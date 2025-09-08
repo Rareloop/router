@@ -6,7 +6,7 @@ class Formatting
 {
     public static function removeTrailingSlash($input)
     {
-        return rtrim($input, '/\\');
+        return rtrim((string) $input, '/\\');
     }
 
     public static function addTrailingSlash($input)
@@ -16,7 +16,7 @@ class Formatting
 
     public static function removeLeadingSlash($input)
     {
-        return ltrim($input, '/\\');
+        return ltrim((string) $input, '/\\');
     }
 
     public static function addLeadingSlash($input)

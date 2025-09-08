@@ -10,13 +10,8 @@ use Laminas\Diactoros\ServerRequest;
 
 class AddHeaderMiddleware implements MiddlewareInterface
 {
-    private $key;
-    private $value;
-
-    public function __construct($key, $value)
+    public function __construct(private $key, private $value)
     {
-        $this->key = $key;
-        $this->value = $value;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface

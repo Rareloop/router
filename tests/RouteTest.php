@@ -77,7 +77,7 @@ class RouteTest extends TestCase
     public function can_get_route_action_name_when_callable()
     {
         $router = new Router;
-        $route = $router->get('test/123', [TestCallableController::class, 'testStatic']);
+        $route = $router->get('test/123', TestCallableController::testStatic(...));
 
         $this->assertSame(TestCallableController::class.'@testStatic', $route->getActionName());
     }
@@ -87,7 +87,7 @@ class RouteTest extends TestCase
     {
         $router = new Router;
         $controller = new TestCallableController;
-        $route = $router->get('test/123', [$controller, 'test']);
+        $route = $router->get('test/123', $controller->test(...));
 
         $this->assertSame(TestCallableController::class.'@test', $route->getActionName());
     }
@@ -106,9 +106,7 @@ class RouteTest extends TestCase
      */
     public function can_extend_post_behaviour_with_macros()
     {
-        Route::macro('testFunctionAddedByMacro', function () {
-            return 'abc123';
-        });
+        Route::macro('testFunctionAddedByMacro', fn() => 'abc123');
 
         $queryBuilder = new Route(['GET'], '/test/url', function () {});
 
@@ -139,8 +137,6 @@ class RouteMixin
 {
     function testFunctionAddedByMixin()
     {
-        return function() {
-            return 'abc123';
-        };
+        return fn() => 'abc123';
     }
 }

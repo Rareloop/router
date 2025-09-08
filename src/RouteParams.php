@@ -5,11 +5,9 @@ namespace Rareloop\Router;
 class RouteParams implements \Iterator
 {
     private $position = 0;
-    private $params = [];
 
-    public function __construct(array $params)
+    public function __construct(private array $params)
     {
-        $this->params = $params;
     }
 
     public function __get($key)

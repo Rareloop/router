@@ -545,7 +545,7 @@ class RouterTest extends TestCase
 
         $route = $router->get('/posts/all', function () {})->name('test.name');
         $request = new ServerRequest([], [], '/does/not/match', 'GET');
-        $router->match($request, 'GET');
+        $router->match($request);
 
         $this->assertSame('/posts/all/', $router->url('test.name'));
     }
@@ -588,9 +588,7 @@ class RouterTest extends TestCase
             $count++;
             $this->assertInstanceOf(RouteGroup::class, $group);
 
-            $group->get('all', function () {
-                return 'abc123';
-            });
+            $group->get('all', fn() => 'abc123');
         });
         $response = $router->match($request);
 
@@ -610,9 +608,7 @@ class RouterTest extends TestCase
             $count++;
             $this->assertInstanceOf(RouteGroup::class, $group);
 
-            $group->get('all', function () {
-                return 'abc123';
-            });
+            $group->get('all', fn() => 'abc123');
         });
         $response = $router->match($request);
 
@@ -632,9 +628,7 @@ class RouterTest extends TestCase
             $count++;
             $this->assertInstanceOf(RouteGroup::class, $group);
 
-            $group->get('all', function () {
-                return 'abc123';
-            });
+            $group->get('all', fn() => 'abc123');
         });
         $response = $router->match($request);
 
@@ -654,9 +648,7 @@ class RouterTest extends TestCase
             $count++;
             $this->assertInstanceOf(RouteGroup::class, $group);
 
-            $group->get('all', function () {
-                return 'abc123';
-            });
+            $group->get('all', fn() => 'abc123');
         });
         $response = $router->match($request);
 
@@ -676,9 +668,7 @@ class RouterTest extends TestCase
             $count++;
             $this->assertInstanceOf(RouteGroup::class, $group);
 
-            $group->get('all', function () {
-                return 'abc123';
-            });
+            $group->get('all', fn() => 'abc123');
         });
         $response = $router->match($request);
 
@@ -702,9 +692,7 @@ class RouterTest extends TestCase
                 $count++;
                 $this->assertInstanceOf(RouteGroup::class, $group);
 
-                $group->get('all', function () {
-                    return 'abc123';
-                });
+                $group->get('all', fn() => 'abc123');
             });
         });
         $response = $router->match($request);
@@ -729,9 +717,7 @@ class RouterTest extends TestCase
                 $count++;
                 $this->assertInstanceOf(RouteGroup::class, $group);
 
-                $group->get('all', function () {
-                    return 'abc123';
-                });
+                $group->get('all', fn() => 'abc123');
             });
         });
         $response = $router->match($request);
@@ -912,9 +898,7 @@ class RouterTest extends TestCase
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router = new Router;
 
-        $route = $router->get('/test/123', function () {
-            return 'abc123';
-        })->name('test123');
+        $route = $router->get('/test/123', fn() => 'abc123')->name('test123');
 
         $this->assertSame(null, $router->currentRouteName());
     }
@@ -925,9 +909,7 @@ class RouterTest extends TestCase
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router = new Router;
 
-        $route = $router->get('/test/123', function () {
-            return 'abc123';
-        });
+        $route = $router->get('/test/123', fn() => 'abc123');
 
         $response = $router->match($request);
 
@@ -953,9 +935,7 @@ class RouterTest extends TestCase
      */
     public function can_extend_post_behaviour_with_macros()
     {
-        Router::macro('testFunctionAddedByMacro', function () {
-            return 'abc123';
-        });
+        Router::macro('testFunctionAddedByMacro', fn() => 'abc123');
 
         $queryBuilder = new Router();
 
@@ -980,8 +960,6 @@ class RouterMixin
 {
     function testFunctionAddedByMixin()
     {
-        return function() {
-            return 'abc123';
-        };
+        return fn() => 'abc123';
     }
 }

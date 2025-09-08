@@ -148,9 +148,7 @@ class RouteGroupTest extends TestCase
      */
     public function can_extend_post_behaviour_with_macros()
     {
-        RouteGroup::macro('testFunctionAddedByMacro', function () {
-            return 'abc123';
-        });
+        RouteGroup::macro('testFunctionAddedByMacro', fn() => 'abc123');
 
         $queryBuilder = new RouteGroup([], new Router);
 
@@ -175,8 +173,6 @@ class RouteGroupMixin
 {
     function testFunctionAddedByMixin()
     {
-        return function() {
-            return 'abc123';
-        };
+        return fn() => 'abc123';
     }
 }

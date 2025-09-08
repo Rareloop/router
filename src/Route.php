@@ -21,34 +21,27 @@ class Route
     use Macroable;
 
     private $uri;
-    private $methods = [];
     private $routeAction;
     private $name;
-    private $invoker = null;
-    private $middlewareResolver = null;
     private $middleware = [];
     private $paramConstraints = [];
     private $controllerName = null;
     private $controllerMethod = null;
 
     public function __construct(
-        array $methods,
+        private array $methods,
         string $uri,
         $action,
-        Invoker $invoker = null,
-        MiddlewareResolver $resolver = null
+        private ?\Rareloop\Router\Invoker $invoker = null,
+        private ?\Rareloop\Router\MiddlewareResolver $middlewareResolver = null
     ) {
-        $this->invoker = $invoker;
-        $this->middlewareResolver = $resolver;
-
-        $this->methods = $methods;
         $this->setUri($uri);
         $this->setAction($action);
     }
 
     private function setUri($uri)
     {
-        $this->uri = rtrim($uri, ' /');
+        $this->uri = rtrim((string) $uri, ' /');
     }
 
     private function setAction($action)

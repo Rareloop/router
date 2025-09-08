@@ -133,9 +133,7 @@ class RouterMiddlewareTest extends TestCase
             $count++;
             $this->assertInstanceOf(RouteGroup::class, $group);
 
-            $group->get('all', function () {
-                return 'abc123';
-            });
+            $group->get('all', fn() => 'abc123');
         });
         $response = $router->match($request);
 
@@ -157,9 +155,7 @@ class RouterMiddlewareTest extends TestCase
             $count++;
             $this->assertInstanceOf(RouteGroup::class, $group);
 
-            $group->get('all', function () {
-                return 'abc123';
-            });
+            $group->get('all', fn() => 'abc123');
         });
         $response = $router->match($request);
 
@@ -261,9 +257,7 @@ class RouterMiddlewareTest extends TestCase
         $middleware = new AddHeaderMiddleware($header, $value);
         $resolver = Mockery::mock(MiddlewareResolver::class);
         $resolver->shouldReceive('resolve')->with('middleware-key')->andReturn($middleware);
-        $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(function ($argument) {
-            return $argument;
-        });
+        $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(fn($argument) => $argument);
 
         return $resolver;
     }

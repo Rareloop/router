@@ -200,9 +200,7 @@ class ControllerTest extends TestCase
         $middleware = new AddHeaderMiddleware($header, $value);
         $resolver = Mockery::mock(MiddlewareResolver::class);
         $resolver->shouldReceive('resolve')->with('middleware-key')->andReturn($middleware);
-        $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(function ($argument) {
-            return $argument;
-        });
+        $resolver->shouldReceive('resolve')->with(Mockery::type('callable'))->andReturnUsing(fn($argument) => $argument);
 
         return $resolver;
     }
