@@ -14,10 +14,11 @@ use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\MiddlewareProvidingController;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
 use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\Attributes\Test;
 
 class RouterMiddlewareTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function can_add_middleware_as_a_closure_to_a_route()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
@@ -43,7 +44,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('value', $response->getHeader('X-Key')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_middleware_as_an_object_to_a_route()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
@@ -63,7 +64,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('value', $response->getHeader('X-Key')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_multiple_middleware_to_a_route_in_successive_calls()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
@@ -82,7 +83,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('123', $response->getHeader('X-Key2')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_multiple_middleware_to_a_route_in_a_single_call()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
@@ -102,7 +103,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('123', $response->getHeader('X-Key2')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_multiple_middleware_to_a_route_as_an_array()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
@@ -122,7 +123,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('123', $response->getHeader('X-Key2')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_middleware_to_a_group()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
@@ -144,7 +145,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_single_middleware_to_a_group_without_wrapping_in_array()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
@@ -166,7 +167,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_base_middleware_to_be_applied_to_all_routes()
     {
         $router = new Router;
@@ -201,7 +202,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc', $response2->getHeader('X-Key')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_resolve_middleware_on_a_route_using_a_custom_resolver()
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
@@ -217,7 +218,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_resolve_middleware_on_a_group_using_a_custom_resolver()
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
@@ -235,7 +236,7 @@ class RouterMiddlewareTest extends TestCase
         $this->assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_resolve_global_middleware_using_a_custom_resolver()
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
