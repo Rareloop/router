@@ -10,10 +10,11 @@ use Rareloop\Router\Test\Controllers\TestController;
 use Rareloop\Router\Test\Requests\TestRequest;
 use Rareloop\Router\Test\Services\TestService;
 use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\Attributes\Test;
 
 class RouterDITest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function can_pass_a_container_into_constructor()
     {
         $container = new \DI\Container();
@@ -22,7 +23,7 @@ class RouterDITest extends TestCase
         $this->assertInstanceOf(Router::class, $router);
     }
 
-    /** @test */
+    #[Test]
     public function container_passed_to_constructor_must_be_psr_11_compatible()
     {
         $this->expectException(\TypeError::class);
@@ -33,7 +34,7 @@ class RouterDITest extends TestCase
         $this->assertInstanceOf(Router::class, $router);
     }
 
-    /** @test */
+    #[Test]
     public function route_params_are_injected_into_closure()
     {
         $container = new \DI\Container();
@@ -57,7 +58,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function typehints_are_injected_into_closure()
     {
         $container = new \DI\Container();
@@ -84,7 +85,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function typehints_are_injected_into_closure_with_params()
     {
         $container = new \DI\Container();
@@ -113,7 +114,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function route_params_are_injected_into_closure_regardless_of_param_order()
     {
         $container = new \DI\Container();
@@ -137,7 +138,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function reflection_error_is_thrown_when_typehints_cant_be_resolved_from_the_container()
     {
         $this->expectException(\ReflectionException::class);
@@ -151,7 +152,7 @@ class RouterDITest extends TestCase
         $response = $router->match($request);
     }
 
-    /** @test */
+    #[Test]
     public function route_params_are_injected_into_controller_class()
     {
         $container = new \DI\Container();
@@ -166,7 +167,7 @@ class RouterDITest extends TestCase
         $this->assertSame('$postId: 1 $commentId: 2', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function typehints_are_injected_into_controller_class()
     {
         $container = new \DI\Container();
@@ -184,7 +185,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc123', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function typehints_are_injected_into_controller_class_with_params()
     {
         $container = new \DI\Container();
@@ -202,7 +203,7 @@ class RouterDITest extends TestCase
         $this->assertSame('$postId: 1 $commentId: 2 TestService: abc123', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function can_inject_request_object()
     {
         $container = new \DI\Container();
@@ -228,7 +229,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc123', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function can_inject_request_object_with_a_body()
     {
         $container = new \DI\Container();
@@ -255,7 +256,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc123', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function can_inject_request_sub_class()
     {
         $container = new \DI\Container();
@@ -282,7 +283,7 @@ class RouterDITest extends TestCase
         $this->assertSame('abc123', $response->getBody()->getContents());
     }
 
-    /** @test */
+    #[Test]
     public function constructor_params_are_injected_into_controller_class()
     {
         $container = new \DI\Container();
