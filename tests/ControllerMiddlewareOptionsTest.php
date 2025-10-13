@@ -2,13 +2,12 @@
 
 namespace Rareloop\Router\Test;
 
-use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\ControllerMiddlewareOptions;
 
 class ControllerMiddlewareOptionsTest extends TestCase
 {
-    #[Test]
+    /** @test */
     public function by_default_no_methods_are_excluded()
     {
         $options = new ControllerMiddlewareOptions;
@@ -17,7 +16,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
         $this->assertFalse($options->excludedForMethod('bar'));
     }
 
-    #[Test]
+    /** @test */
     public function only_is_chainable()
     {
         $options = new ControllerMiddlewareOptions;
@@ -25,7 +24,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
         $this->assertSame($options, $options->only('foo'));
     }
 
-    #[Test]
+    /** @test */
     public function can_use_only_to_limit_methods()
     {
         $options = new ControllerMiddlewareOptions;
@@ -36,7 +35,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
         $this->assertTrue($options->excludedForMethod('bar'));
     }
 
-    #[Test]
+    /** @test */
     public function can_use_only_to_limit_multiple_methods()
     {
         $options = new ControllerMiddlewareOptions;
@@ -48,7 +47,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
         $this->assertTrue($options->excludedForMethod('baz'));
     }
 
-    #[Test]
+    /** @test */
     public function except_is_chainable()
     {
         $options = new ControllerMiddlewareOptions;
@@ -56,7 +55,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
         $this->assertSame($options, $options->except('foo'));
     }
 
-    #[Test]
+    /** @test */
     public function can_use_except_to_limit_methods()
     {
         $options = new ControllerMiddlewareOptions;
@@ -67,7 +66,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
         $this->assertFalse($options->excludedForMethod('bar'));
     }
 
-    #[Test]
+    /** @test */
     public function can_use_except_to_limit_multiple_methods()
     {
         $options = new ControllerMiddlewareOptions;

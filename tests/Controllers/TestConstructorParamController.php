@@ -6,8 +6,11 @@ use Rareloop\Router\Test\Services\TestService;
 
 class TestConstructorParamController
 {
-    public function __construct(private readonly TestService $testService)
+    private $testService;
+
+    public function __construct(TestService $testService)
     {
+        $this->testService = $testService;
     }
 
     public function returnTestServiceValue()

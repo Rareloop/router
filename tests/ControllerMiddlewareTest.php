@@ -6,11 +6,10 @@ use PHPUnit\Framework\TestCase;
 use Rareloop\Router\ControllerMiddleware;
 use Rareloop\Router\ControllerMiddlewareOptions;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
-use PHPUnit\Framework\Attributes\Test;
 
 class ControllerMiddlewareTest extends TestCase
 {
-    #[Test]
+    /** @test */
     public function can_retrieve_middleware()
     {
         $middleware = new AddHeaderMiddleware('X-Header', 'testing123');
@@ -21,7 +20,7 @@ class ControllerMiddlewareTest extends TestCase
         $this->assertSame($middleware, $controllerMiddleware->middleware());
     }
 
-    #[Test]
+    /** @test */
     public function can_retrieve_options()
     {
         $middleware = new AddHeaderMiddleware('X-Header', 'testing123');

@@ -151,11 +151,15 @@ class RouteAction
 
         $allControllerMiddleware = array_filter(
             $this->getController()->getControllerMiddleware(),
-            fn(ControllerMiddleware $middleware) => !$middleware->excludedForMethod($this->controllerMethod)
+            function (ControllerMiddleware $middleware) {
+                return !$middleware->excludedForMethod($this->controllerMethod);
+            }
         );
 
         return array_map(
-            fn($controllerMiddleware) => $controllerMiddleware->middleware(),
+            function ($controllerMiddleware) {
+                return $controllerMiddleware->middleware();
+            },
             $allControllerMiddleware
         );
     }
@@ -171,7 +175,7 @@ class RouteAction
         $this->controllerName = null;
         $this->controllerMethod = null;
 
-        @[$className, $method] = explode('@', $string);
+        @list($className, $method) = explode('@', $string);
 
         if (!isset($className) || !isset($method)) {
             throw new RouteClassStringParseException('Could not parse route controller from string: `' . $string . '`');
@@ -200,7 +204,9 @@ class RouteAction
                 return [$controller, $method];
             }
 
-            return fn($params = null) => $controller->$method($params);
+            return function ($params = null) use ($controller, $method) {
+                return $controller->$method($params);
+            };
         };
     }
 
@@ -218,7 +224,7 @@ class RouteAction
         }
 
         if (is_callable($this->callable, false, $callableName)) {
-            [$controller, $method] = explode('::', $callableName);
+            list($controller, $method) = explode('::', $callableName);
 
             if ($controller === 'Closure') {
                 return $controller;

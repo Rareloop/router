@@ -6,11 +6,10 @@ use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
-use PHPUnit\Framework\Attributes\Test;
 
 class RouteGroupTest extends TestCase
 {
-    #[Test]
+    /** @test */
     public function group_function_is_chainable()
     {
         $router = new Router;
@@ -18,7 +17,7 @@ class RouteGroupTest extends TestCase
         $this->assertInstanceOf(Router::class, $router->group('test/123', function () {}));
     }
 
-    #[Test]
+    /** @test */
     public function can_add_get_request_to_a_group()
     {
         $router = new Router;
@@ -36,7 +35,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    #[Test]
+    /** @test */
     public function can_add_request_to_a_group_with_leading_slash()
     {
         $router = new Router;
@@ -54,7 +53,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    #[Test]
+    /** @test */
     public function can_add_post_request_to_a_group()
     {
         $router = new Router;
@@ -72,7 +71,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    #[Test]
+    /** @test */
     public function can_add_put_request_to_a_group()
     {
         $router = new Router;
@@ -90,7 +89,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    #[Test]
+    /** @test */
     public function can_add_patch_request_to_a_group()
     {
         $router = new Router;
@@ -108,7 +107,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    #[Test]
+    /** @test */
     public function can_add_delete_request_to_a_group()
     {
         $router = new Router;
@@ -126,7 +125,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    #[Test]
+    /** @test */
     public function can_add_options_request_to_a_group()
     {
         $router = new Router;
@@ -149,7 +148,9 @@ class RouteGroupTest extends TestCase
      */
     public function can_extend_post_behaviour_with_macros()
     {
-        RouteGroup::macro('testFunctionAddedByMacro', fn() => 'abc123');
+        RouteGroup::macro('testFunctionAddedByMacro', function () {
+            return 'abc123';
+        });
 
         $queryBuilder = new RouteGroup([], new Router);
 
@@ -174,6 +175,8 @@ class RouteGroupMixin
 {
     function testFunctionAddedByMixin()
     {
-        return fn() => 'abc123';
+        return function() {
+            return 'abc123';
+        };
     }
 }

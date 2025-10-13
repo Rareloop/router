@@ -4,11 +4,10 @@ namespace Rareloop\Router\Test;
 
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\RouteParams;
-use PHPUnit\Framework\Attributes\Test;
 
 class RouterParamsTest extends TestCase
 {
-    #[Test]
+    /** @test */
     public function can_get_param_by_key()
     {
         $params = new RouteParams(['key' => 'value']);
@@ -16,7 +15,7 @@ class RouterParamsTest extends TestCase
         $this->assertSame('value', $params->key);
     }
 
-    #[Test]
+    /** @test */
     public function can_iterate_all_keys_and_values()
     {
         $params = new RouteParams([
@@ -37,7 +36,7 @@ class RouterParamsTest extends TestCase
         $this->assertSame(['value1', 'value2', 'value3'], $values);
     }
 
-    #[Test]
+    /** @test */
     public function return_null_when_a_key_is_not_found()
     {
         $params = new RouteParams(['key' => 'value']);
@@ -45,7 +44,7 @@ class RouterParamsTest extends TestCase
         $this->assertNull($params->invalid);
     }
 
-    #[Test]
+    /** @test */
     public function can_get_params_as_array()
     {
         $data = ['key1' => 'value1', 'key2' => 'value2'];

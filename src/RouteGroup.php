@@ -9,10 +9,12 @@ use Spatie\Macroable\Macroable;
 class RouteGroup implements Routable
 {
     use VerbShortcutsTrait, Macroable;
+
+    protected $router;
     protected $prefix;
     protected $middleware = [];
 
-    public function __construct($params, protected $router)
+    public function __construct($params, $router)
     {
         $prefix = null;
         $middleware = [];
@@ -33,6 +35,7 @@ class RouteGroup implements Routable
         }
 
         $this->prefix = is_string($prefix) ? trim($prefix, ' /') : null;
+        $this->router = $router;
     }
 
     private function appendPrefixToUri(string $uri)

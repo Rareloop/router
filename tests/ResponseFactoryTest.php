@@ -10,7 +10,6 @@ use Rareloop\Router\ResponseFactory;
 use Laminas\Diactoros\Response\EmptyResponse;
 use Laminas\Diactoros\Response\TextResponse;
 use Laminas\Diactoros\ServerRequest;
-use PHPUnit\Framework\Attributes\Test;
 
 class ResponseFactoryTest extends TestCase
 {
@@ -25,7 +24,7 @@ class ResponseFactoryTest extends TestCase
         $this->request = new ServerRequest([], [], '/test/123', 'GET');
     }
 
-    #[Test]
+    /** @test */
     public function when_passed_a_response_instance_the_same_object_is_returned()
     {
         $response = new TextResponse('Testing', 200);
@@ -33,7 +32,7 @@ class ResponseFactoryTest extends TestCase
         $this->assertSame($response, ResponseFactory::create($this->request, $response));
     }
 
-    #[Test]
+    /** @test */
     public function when_passed_a_non_response_instance_a_response_object_is_returned()
     {
         $response = ResponseFactory::create($this->request, 'Testing');
@@ -42,7 +41,7 @@ class ResponseFactoryTest extends TestCase
         $this->assertSame('Testing', $response->getBody()->getContents());
     }
 
-    #[Test]
+    /** @test */
     public function when_nothing_is_passed_an_empty_response_object_is_returned()
     {
         $response = ResponseFactory::create($this->request);
@@ -50,7 +49,7 @@ class ResponseFactoryTest extends TestCase
         $this->assertInstanceOf(EmptyResponse::class, $response);
     }
 
-    #[Test]
+    /** @test */
     public function when_a_responsable_object_is_passed_the_response_object_is_returned()
     {
         $textResponse = new TextResponse('testing123');

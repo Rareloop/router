@@ -79,7 +79,7 @@ class Router implements Routable
     {
         $output = $route->getUri();
 
-        preg_match_all('/{\s*([a-zA-Z0-9]+\??)\s*}/s', (string) $route->getUri(), $matches);
+        preg_match_all('/{\s*([a-zA-Z0-9]+\??)\s*}/s', $route->getUri(), $matches);
 
         $paramConstraints = $route->getParamConstraints();
 
@@ -87,7 +87,7 @@ class Router implements Routable
             $match = $matches[0][$i];
             $paramKey = $matches[1][$i];
 
-            $optional = str_ends_with($paramKey, '?');
+            $optional = substr($paramKey, -1) === '?';
             $paramKey = trim($paramKey, '?');
 
             $regex = $paramConstraints[$paramKey] ?? null;
@@ -109,7 +109,7 @@ class Router implements Routable
             $output = str_replace($match, $replacement, $output);
         }
 
-        return ltrim((string) $output, ' /');
+        return ltrim($output, ' /');
     }
 
     public function map(array $verbs, string $uri, $callback): Route
@@ -180,7 +180,9 @@ class Router implements Routable
 
         // Apply all the base middleware and trigger the route handler as the last in the chain
         $middlewares = array_merge($this->baseMiddleware, [
-            fn($request) => $route->handle($request, $params),
+            function ($request) use ($route, $params) {
+                return $route->handle($request, $params);
+            },
         ]);
 
         // Create and process the dispatcher
@@ -197,7 +199,9 @@ class Router implements Routable
 
     public function has(string $name)
     {
-        $routes = array_filter($this->routes, fn($route) => $route->getName() === $name);
+        $routes = array_filter($this->routes, function ($route) use ($name) {
+            return $route->getName() === $name;
+        });
 
         return count($routes) > 0;
     }
@@ -223,7 +227,7 @@ class Router implements Routable
                 $regex = $paramConstraints[$key] ?? false;
 
                 if ($regex) {
-                    if (!preg_match('/' . $regex . '/', (string) $value)) {
+                    if (!preg_match('/' . $regex . '/', $value)) {
                         throw new RouteParamFailedConstraintException(
                             'Value `' . $value . '` for param `' . $key . '` fails constraint `' . $regex . '`'
                         );
@@ -234,7 +238,7 @@ class Router implements Routable
 
         try {
             return $this->altoRouter->generate($name, $params);
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             throw new NamedRouteNotFoundException($name);
         }
     }

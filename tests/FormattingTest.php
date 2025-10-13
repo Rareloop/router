@@ -4,11 +4,10 @@ namespace Rareloop\Router\Test;
 
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Helpers\Formatting;
-use PHPUnit\Framework\Attributes\Test;
 
 class FormattingTest extends TestCase
 {
-    #[Test]
+    /** @test */
     public function can_remove_trialing_slash()
     {
         $string = 'string/';
@@ -16,7 +15,7 @@ class FormattingTest extends TestCase
         $this->assertSame('string', Formatting::removeTrailingSlash($string));
     }
 
-    #[Test]
+    /** @test */
     public function can_add_trialing_slash()
     {
         $string = 'string';
@@ -24,7 +23,7 @@ class FormattingTest extends TestCase
         $this->assertSame('string/', Formatting::addTrailingSlash($string));
     }
 
-    #[Test]
+    /** @test */
     public function add_trialing_slash_does_not_produce_duplicates()
     {
         $string = 'string/';
@@ -32,7 +31,7 @@ class FormattingTest extends TestCase
         $this->assertSame('string/', Formatting::addTrailingSlash($string));
     }
 
-    #[Test]
+    /** @test */
     public function can_remove_leading_slash()
     {
         $string = '/string';
@@ -40,7 +39,7 @@ class FormattingTest extends TestCase
         $this->assertSame('string', Formatting::removeLeadingSlash($string));
     }
 
-    #[Test]
+    /** @test */
     public function can_add_leading_slash()
     {
         $string = 'string';
@@ -48,7 +47,7 @@ class FormattingTest extends TestCase
         $this->assertSame('/string', Formatting::addLeadingSlash($string));
     }
 
-    #[Test]
+    /** @test */
     public function add_leading_slash_does_not_produce_duplicates()
     {
         $string = '/string';
