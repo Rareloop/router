@@ -10,7 +10,6 @@ use Rareloop\Router\Test\Controllers\TestController;
 use Rareloop\Router\Test\Requests\TestRequest;
 use Rareloop\Router\Test\Services\TestService;
 use Laminas\Diactoros\ServerRequest;
-use PHPUnit\Framework\Attributes\Test;
 
 class RouterDITest extends TestCase
 {
