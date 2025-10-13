@@ -35,8 +35,8 @@ class Route
         array $methods,
         string $uri,
         $action,
-        Invoker $invoker = null,
-        MiddlewareResolver $resolver = null
+        ?Invoker $invoker = null,
+        ?MiddlewareResolver $resolver = null
     ) {
         $this->invoker = $invoker;
         $this->middlewareResolver = $resolver;
@@ -77,7 +77,7 @@ class Route
             return $this->middlewareResolver->resolve($name);
         });
 
-        return $dispatcher->dispatch($request);
+        return $dispatcher->handle($request);
     }
 
     private function gatherMiddleware(): array

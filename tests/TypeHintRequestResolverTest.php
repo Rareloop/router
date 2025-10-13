@@ -3,12 +3,13 @@
 namespace Rareloop\Router\Test;
 
 use PHPUnit\Framework\TestCase;
-use Rareloop\Router\TypeHintRequestResolver;
 use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\Attributes\Test;
+use Rareloop\Router\TypeHintRequestResolver;
 
 class TypeHintRequestResolverTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function returns_resolved_parameters_when_no_request_is_set()
     {
         $reflectionFunction = new \ReflectionFunction(function () {});
@@ -20,7 +21,7 @@ class TypeHintRequestResolverTest extends TestCase
         $this->assertSame($resolvedParameters, $params);
     }
 
-    /** @test */
+    #[Test]
     public function can_resolve_a_request()
     {
         $request = new ServerRequest([], [], '/injected', 'GET');
@@ -33,7 +34,7 @@ class TypeHintRequestResolverTest extends TestCase
         $this->assertSame('/injected', $params[0]->getUri()->getPath());
     }
 
-    /** @test */
+    #[Test]
     public function does_not_attempt_to_resolve_params_that_have_already_been_resolved()
     {
         $preResolvedRequest = new ServerRequest([], [], '/pre/resolved', 'GET');

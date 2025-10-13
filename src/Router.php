@@ -36,7 +36,7 @@ class Router implements Routable
     private $invoker = null;
     private $baseMiddleware = [];
 
-    public function __construct(ContainerInterface $container = null, MiddlewareResolver $resolver = null)
+    public function __construct(?ContainerInterface $container = null, ?MiddlewareResolver $resolver = null)
     {
         if (isset($container)) {
             $this->setContainer($container);
@@ -194,7 +194,7 @@ class Router implements Routable
             return $this->middlewareResolver->resolve($name);
         });
 
-        return $dispatcher->dispatch($request);
+        return $dispatcher->handle($request);
     }
 
     public function has(string $name)

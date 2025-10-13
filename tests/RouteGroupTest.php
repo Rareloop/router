@@ -6,10 +6,11 @@ use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Route;
 use Rareloop\Router\RouteGroup;
 use Rareloop\Router\Router;
+use PHPUnit\Framework\Attributes\Test;
 
 class RouteGroupTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function group_function_is_chainable()
     {
         $router = new Router;
@@ -17,7 +18,7 @@ class RouteGroupTest extends TestCase
         $this->assertInstanceOf(Router::class, $router->group('test/123', function () {}));
     }
 
-    /** @test */
+    #[Test]
     public function can_add_get_request_to_a_group()
     {
         $router = new Router;
@@ -35,7 +36,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_request_to_a_group_with_leading_slash()
     {
         $router = new Router;
@@ -53,7 +54,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_post_request_to_a_group()
     {
         $router = new Router;
@@ -71,7 +72,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_put_request_to_a_group()
     {
         $router = new Router;
@@ -89,7 +90,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_patch_request_to_a_group()
     {
         $router = new Router;
@@ -107,7 +108,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_delete_request_to_a_group()
     {
         $router = new Router;
@@ -125,7 +126,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_options_request_to_a_group()
     {
         $router = new Router;
@@ -143,9 +144,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_extend_post_behaviour_with_macros()
     {
         RouteGroup::macro('testFunctionAddedByMacro', function () {
@@ -158,9 +157,7 @@ class RouteGroupTest extends TestCase
         $this->assertSame('abc123', RouteGroup::testFunctionAddedByMacro());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_extend_post_behaviour_with_mixin()
     {
         RouteGroup::mixin(new RouteGroupMixin);
@@ -175,7 +172,7 @@ class RouteGroupMixin
 {
     function testFunctionAddedByMixin()
     {
-        return function() {
+        return function () {
             return 'abc123';
         };
     }

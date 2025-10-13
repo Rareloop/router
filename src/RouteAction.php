@@ -29,7 +29,7 @@ class RouteAction
      * @param mixed $action
      * @param Rareloop/Router/Invoker $invoker
      */
-    public function __construct($action, Invoker $invoker = null)
+    public function __construct($action, ?Invoker $invoker = null)
     {
         $this->invoker = $invoker;
         $this->callable = $this->createCallableFromAction($action);
@@ -65,7 +65,7 @@ class RouteAction
      * @param  mixed $action
      * @return callable
      */
-    private function createCallableFromAction($action) : callable
+    private function createCallableFromAction($action): callable
     {
         // Check if this looks like it could be a class/method string
         if (!is_callable($action) && is_string($action)) {
@@ -80,7 +80,7 @@ class RouteAction
      *
      * @return boolean
      */
-    private function isControllerAction() : bool
+    private function isControllerAction(): bool
     {
         return !empty($this->controllerName) && !empty($this->controllerMethod);
     }
@@ -127,7 +127,7 @@ class RouteAction
      *
      * @return bool
      */
-    private function providesMiddleware() : bool
+    private function providesMiddleware(): bool
     {
         $controller = $this->getController();
 
@@ -143,7 +143,7 @@ class RouteAction
      *
      * @return array
      */
-    public function getMiddleware() : array
+    public function getMiddleware(): array
     {
         if (!$this->providesMiddleware()) {
             return [];
@@ -170,7 +170,7 @@ class RouteAction
      * @param  string $string e.g. `MyController@myMethod`
      * @return Closure
      */
-    private function convertClassStringToFactory($string) : Closure
+    private function convertClassStringToFactory($string): Closure
     {
         $this->controllerName = null;
         $this->controllerMethod = null;

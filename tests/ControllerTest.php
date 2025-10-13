@@ -3,7 +3,6 @@
 namespace Rareloop\Router\Test;
 
 use Mockery;
-use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
 use Rareloop\Router\Controller;
 use Rareloop\Router\ControllerMiddlewareOptions;
@@ -12,13 +11,14 @@ use Rareloop\Router\Router;
 use Rareloop\Router\Test\Controllers\MiddlewareProvidingController;
 use Rareloop\Router\Test\Middleware\AddHeaderMiddleware;
 use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\Attributes\Test;
 
 class ControllerTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function can_add_single_middleware_via_controller()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new \DI\Container();
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router = new Router($container);
 
@@ -37,10 +37,10 @@ class ControllerTest extends TestCase
         $this->assertSame('testing123', $response->getHeader('X-Header')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_resolve_middleware_on_a_controller_using_custom_resolver()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new \DI\Container();
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Header', 'testing123');
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router = new Router($container, $resolver);
@@ -60,10 +60,10 @@ class ControllerTest extends TestCase
         $this->assertSame('testing123', $response->getHeader('X-Header')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function can_add_multiple_middleware_as_array_via_controller()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new \DI\Container();
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router = new Router($container);
 
@@ -87,7 +87,7 @@ class ControllerTest extends TestCase
         $this->assertSame('testing456', $response->getHeader('X-Header-2')[0]);
     }
 
-    /** @test */
+    #[Test]
     public function controller_middleware_method_returns_options()
     {
         $controller = new MiddlewareProvidingController;
@@ -97,10 +97,10 @@ class ControllerTest extends TestCase
         $this->assertInstanceOf(ControllerMiddlewareOptions::class, $options);
     }
 
-    /** @test */
+    #[Test]
     public function middleware_can_be_limited_to_methods_using_only()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new \DI\Container();
         $router = new Router($container);
 
         $controller = new MiddlewareProvidingController;
@@ -116,10 +116,10 @@ class ControllerTest extends TestCase
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
     }
 
-    /** @test */
+    #[Test]
     public function middleware_can_be_limited_to_multiple_methods_using_only()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new \DI\Container();
         $router = new Router($container);
 
         $controller = new MiddlewareProvidingController;
@@ -135,10 +135,10 @@ class ControllerTest extends TestCase
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
     }
 
-    /** @test */
+    #[Test]
     public function middleware_can_be_limited_to_methods_using_except()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new \DI\Container();
         $router = new Router($container);
 
         $controller = new MiddlewareProvidingController;
@@ -154,10 +154,10 @@ class ControllerTest extends TestCase
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
     }
 
-    /** @test */
+    #[Test]
     public function middleware_can_be_limited_to_multiple_methods_using_except()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new \DI\Container();
         $router = new Router($container);
 
         $controller = new MiddlewareProvidingController;
@@ -188,10 +188,10 @@ class ControllerTest extends TestCase
             $response = $router->match(new ServerRequest([], [], '/test/' . $method, 'GET'));
 
             if ($applied) {
-                $this->assertTrue($response->hasHeader('X-Header'), '`'.$method.'` should have middleware applied');
+                $this->assertTrue($response->hasHeader('X-Header'), '`' . $method . '` should have middleware applied');
                 $this->assertSame('testing123', $response->getHeader('X-Header')[0]);
             } else {
-                $this->assertFalse($response->hasHeader('X-Header'), '`'.$method.'` should not have middleware applied');
+                $this->assertFalse($response->hasHeader('X-Header'), '`' . $method . '` should not have middleware applied');
             }
         }
     }
