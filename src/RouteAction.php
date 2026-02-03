@@ -223,6 +223,10 @@ class RouteAction
             return $this->controllerName . '@' . $this->controllerMethod;
         }
 
+        if ($this->callable instanceof \Closure) {
+            return 'Closure';
+        }
+
         if (is_callable($this->callable, false, $callableName)) {
             list($controller, $method) = explode('::', $callableName);
 
