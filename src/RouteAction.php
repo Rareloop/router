@@ -230,10 +230,6 @@ class RouteAction
         if (is_callable($this->callable, false, $callableName)) {
             list($controller, $method) = explode('::', $callableName);
 
-            if ($controller === 'Closure') {
-                return $controller;
-            }
-
             return $controller . '@' . $method;
         }
     }
