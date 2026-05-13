@@ -4,6 +4,7 @@ namespace Rareloop\Router;
 
 use Invoker\Invoker as DIInvoker;
 use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
+use Invoker\ParameterResolver\ParameterResolver;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -11,9 +12,9 @@ class Invoker extends DIInvoker
 {
     private $requestResolver;
 
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, ?ParameterResolver $parameterResolver = null)
     {
-        parent::__construct(null, $container);
+        parent::__construct($parameterResolver, $container);
 
         $resolver = $this->getParameterResolver();
 
