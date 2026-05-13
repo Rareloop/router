@@ -26,7 +26,7 @@ class Invoker extends DIInvoker
         $resolver->prependResolver($this->requestResolver);
     }
 
-    public function setRequest(ServerRequestInterface $request): Invoker
+    public function setRequest(ServerRequestInterface $request) : Invoker
     {
         $this->requestResolver->setRequest($request);
 
